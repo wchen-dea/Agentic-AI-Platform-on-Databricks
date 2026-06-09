@@ -28,7 +28,7 @@ The platform coordinates specialist agents through shared memory, typed messagin
 ```bash
 uv sync
 cp .env.example .env
-# set ANTHROPIC_API_KEY
+# set ANTHROPIC_API_KEY and MONGODB_URI
 uv run multi-ai-agent --task "build a user authentication system"
 ```
 

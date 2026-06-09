@@ -194,7 +194,7 @@ class BaseSpecialistAgent:
         self.client = client
         self.project_root = Path(project_root).resolve()
         self.verbose = verbose
-        self.memory = memory or SharedMemory(self.project_root / ".agent_memory.json")
+        self.memory = memory or SharedMemory()
         self.bus = bus or MessageBus(self.project_root / ".agent_messages.json")
         self.tools = COMMON_TOOLS + self.extra_tools
 

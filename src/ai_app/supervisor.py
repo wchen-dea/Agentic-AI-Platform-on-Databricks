@@ -238,7 +238,7 @@ class SupervisorAgent:
 
         # Shared across supervisor + all specialists
         root = Path(self.project_root)
-        self.memory = SharedMemory(root / ".agent_memory.json")
+        self.memory = SharedMemory()
         self.bus = MessageBus(root / ".agent_messages.json")
 
         self._specialist_results: list[AgentResult] = []

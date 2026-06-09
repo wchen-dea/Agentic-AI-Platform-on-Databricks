@@ -15,6 +15,15 @@ Required local environment variable:
 
 - ANTHROPIC_API_KEY
 
+Required shared-memory backend variable:
+
+- MONGODB_URI
+
+Optional MongoDB memory configuration:
+
+- MONGODB_DB (default: agentic_application)
+- MONGODB_MEMORY_COLLECTION (default: shared_memory)
+
 Optional runtime variables for MCP data retrieval:
 
 - DATABRICKS_MCP_URL
@@ -130,6 +139,7 @@ scripts/databricks_deploy.sh performs:
 
 ## Operational Notes
 
-- Shared state files are .agent_memory.json and .agent_messages.json in the project output root.
+- Shared memory is persisted in MongoDB using MONGODB_URI/MONGODB_DB/MONGODB_MEMORY_COLLECTION.
+- Inter-agent messages remain file-backed in .agent_messages.json in the project output root.
 - Use --reset-memory for clean reruns to avoid stale coordination context.
 - For production rollout, require manual workflow dispatch with deploy_prod=true.
