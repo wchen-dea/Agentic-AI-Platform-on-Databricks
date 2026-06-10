@@ -63,6 +63,7 @@ flowchart LR
   subgraph app[Application Layer]
     cli[CLI / argparse]
     core[Supervisor + Specialist Agents]
+    pai[pydantic-ai]
     prompt[Anthropic SDK]
   end
 
@@ -89,7 +90,8 @@ flowchart LR
   end
 
   cli --> core
-  core --> prompt
+  core --> pai
+  pai --> prompt
   core --> mem
   core --> msg
   core --> mcp
@@ -173,6 +175,6 @@ Important behavior:
 
 - `src/ai_app/main.py`: CLI entrypoint and report output.
 - `src/ai_app/supervisor.py`: orchestration and feedback control.
-- `src/ai_app/agents/base.py`: specialist runtime loop and shared tools.
+- `src/ai_app/agents/base.py`: Pydantic AI agent, `SpecialistDeps` injection, `@agent.tool` registration, and `AgentResult` Pydantic model.
 - `src/ai_app/utils/memory.py`: MongoDB-backed shared state.
 - `src/ai_app/utils/message_bus.py`: RabbitMQ-backed typed message bus (topic exchange, durable per-agent queues).

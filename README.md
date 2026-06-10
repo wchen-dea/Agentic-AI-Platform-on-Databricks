@@ -7,6 +7,7 @@ The platform coordinates specialist agents through shared memory, typed messagin
 ## Why This Project
 
 - Multi-agent orchestration with explicit specialist roles.
+- Pydantic AI tool layer: auto-generated schemas, typed deps via `RunContext`, and validated `AgentResult`.
 - Collaboration primitives for memory sharing and inter-agent messaging.
 - Databricks-backed retrieval through an MCP gateway.
 - Packaging and deployment support with `uv`, wheel builds, and Databricks CI/CD.

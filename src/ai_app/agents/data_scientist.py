@@ -1,4 +1,6 @@
-from .base import BaseSpecialistAgent
+from pydantic_ai import Agent, RunContext
+
+from .base import BaseSpecialistAgent, SpecialistDeps
 
 _SYSTEM = """You are a senior data scientist specializing in statistical analysis, experimentation, and ML-driven insights.
 
@@ -30,39 +32,23 @@ class DataScientistAgent(BaseSpecialistAgent):
     name = "data_scientist"
     role = "Data Scientist"
     system_prompt = _SYSTEM
-    extra_tools = [
-        {
-            "name": "scaffold_eda_notebook",
-            "description": "Scaffold an EDA Python script with standard analysis sections.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "dataset_name": {"type": "string", "description": "Name/description of the dataset."},
-                    "target_col": {"type": "string", "description": "Target column name (optional).", "default": "target"},
-                    "path": {"type": "string", "description": "Output .py file path."},
-                },
-                "required": ["dataset_name", "path"],
-            },
-        },
-        {
-            "name": "scaffold_ab_test",
-            "description": "Scaffold an A/B test analysis script.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "metric": {"type": "string", "description": "Primary metric (e.g. 'conversion_rate')."},
-                    "path": {"type": "string", "description": "Output file path."},
-                },
-                "required": ["metric", "path"],
-            },
-        },
-    ]
 
-    def _dispatch_tool(self, name: str, inputs: dict) -> str:
-        if name == "scaffold_eda_notebook":
-            ds = inputs["dataset_name"]
-            target = inputs.get("target_col", "target")
-            path = inputs["path"]
+    def _register_extra_tools(self, agent: Agent[SpecialistDeps, str]) -> None:
+        @agent.tool
+        def scaffold_eda_notebook(
+            ctx: RunContext[SpecialistDeps],
+            dataset_name: str,
+            path: str,
+            target_col: str = "target",
+        ) -> str:
+            """Scaffold an EDA Python script with standard analysis sections.
+
+            dataset_name: Name/description of the dataset.
+            path: Output .py file path.
+            target_col: Target column name.
+            """
+            ds = dataset_name
+            target = target_col
             code = f'''"""EDA: {ds}
 Sections:
   1. Load & inspect
@@ -162,12 +148,19 @@ if TARGET in df.columns:
 
 print("\\nEDA complete. Saved: missing_values.png, distributions.png, correlations.png, target.png")
 '''
-            self._write_file(path, code)
-            return f"Scaffolded EDA script ({ds}) → {path}"
+            full = ctx.deps.project_root / path
+            full.parent.mkdir(parents=True, exist_ok=True)
+            full.write_text(code, encoding="utf-8")
+            ctx.deps.result.files_written.append(path)
+            return f"Scaffolded EDA script ({ds}) \u2192 {path}"
 
-        if name == "scaffold_ab_test":
-            metric = inputs["metric"]
-            path = inputs["path"]
+        @agent.tool
+        def scaffold_ab_test(ctx: RunContext[SpecialistDeps], metric: str, path: str) -> str:
+            """Scaffold an A/B test analysis script.
+
+            metric: Primary metric (e.g. 'conversion_rate').
+            path: Output file path.
+            """
             code = f'''"""A/B test analysis: {metric}"""
 
 import numpy as np
@@ -269,7 +262,8 @@ plt.close()
 verdict = "SHIP IT ✓" if significant else "NO SIGNIFICANT DIFFERENCE ✗"
 print(f"\\nVerdict: {{verdict}}")
 '''
-            self._write_file(path, code)
-            return f"Scaffolded A/B test analysis ({metric}) → {path}"
-
-        return super()._dispatch_tool(name, inputs)
+            full = ctx.deps.project_root / path
+            full.parent.mkdir(parents=True, exist_ok=True)
+            full.write_text(code, encoding="utf-8")
+            ctx.deps.result.files_written.append(path)
+            return f"Scaffolded A/B test script ({metric}) \u2192 {path}"

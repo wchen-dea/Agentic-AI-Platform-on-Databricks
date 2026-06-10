@@ -1,4 +1,6 @@
-from .base import BaseSpecialistAgent
+from pydantic_ai import Agent, RunContext
+
+from .base import BaseSpecialistAgent, SpecialistDeps
 
 _SYSTEM = """You are a senior frontend engineer specializing in React, TypeScript, Tailwind CSS, and modern web development.
 
@@ -26,27 +28,22 @@ class FrontendAgent(BaseSpecialistAgent):
     name = "frontend"
     role = "Frontend Engineer"
     system_prompt = _SYSTEM
-    extra_tools = [
-        {
-            "name": "scaffold_component",
-            "description": "Scaffold a React component with TypeScript boilerplate.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "name": {"type": "string", "description": "Component name (PascalCase)."},
-                    "path": {"type": "string", "description": "Output file path."},
-                    "with_test": {"type": "boolean", "description": "Also generate a test file.", "default": True},
-                },
-                "required": ["name", "path"],
-            },
-        }
-    ]
 
-    def _dispatch_tool(self, name: str, inputs: dict) -> str:
-        if name == "scaffold_component":
-            comp = inputs["name"]
-            path = inputs["path"]
-            test = inputs.get("with_test", True)
+    def _register_extra_tools(self, agent: Agent[SpecialistDeps, str]) -> None:
+        @agent.tool
+        def scaffold_component(
+            ctx: RunContext[SpecialistDeps],
+            name: str,
+            path: str,
+            with_test: bool = True,
+        ) -> str:
+            """Scaffold a React component with TypeScript boilerplate.
+
+            name: Component name (PascalCase).
+            path: Output file path.
+            with_test: Also generate a test file.
+            """
+            comp = name
             component_code = f'''import React from "react";
 
 interface {comp}Props {{
@@ -63,9 +60,12 @@ export const {comp}: React.FC<{comp}Props> = ({{ className }}) => {{
 
 export default {comp};
 '''
-            self._write_file(path, component_code)
-            result = f"Scaffolded {comp} → {path}"
-            if test:
+            full = ctx.deps.project_root / path
+            full.parent.mkdir(parents=True, exist_ok=True)
+            full.write_text(component_code, encoding="utf-8")
+            ctx.deps.result.files_written.append(path)
+            result = f"Scaffolded {comp} \u2192 {path}"
+            if with_test:
                 test_path = path.replace(".tsx", ".test.tsx").replace(".ts", ".test.ts")
                 test_code = f'''import {{ render, screen }} from "@testing-library/react";
 import {{ {comp} }} from "./{comp}";
@@ -76,7 +76,9 @@ describe("{comp}", () => {{
   }});
 }});
 '''
-                self._write_file(test_path, test_code)
-                result += f"\nScaffolded test → {test_path}"
+                test_full = ctx.deps.project_root / test_path
+                test_full.parent.mkdir(parents=True, exist_ok=True)
+                test_full.write_text(test_code, encoding="utf-8")
+                ctx.deps.result.files_written.append(test_path)
+                result += f"\nScaffolded test \u2192 {test_path}"
             return result
-        return super()._dispatch_tool(name, inputs)

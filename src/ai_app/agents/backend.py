@@ -1,4 +1,6 @@
-from .base import BaseSpecialistAgent
+from pydantic_ai import Agent, RunContext
+
+from .base import BaseSpecialistAgent, SpecialistDeps
 
 _SYSTEM = """You are a senior backend engineer specializing in Python (FastAPI/Django), Node.js, databases, and distributed systems.
 
@@ -27,25 +29,15 @@ class BackendAgent(BaseSpecialistAgent):
     name = "backend"
     role = "Backend Engineer"
     system_prompt = _SYSTEM
-    extra_tools = [
-        {
-            "name": "scaffold_endpoint",
-            "description": "Scaffold a FastAPI router with CRUD endpoints.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "resource": {"type": "string", "description": "Resource name (e.g. 'user', 'product')."},
-                    "path": {"type": "string", "description": "Output file path."},
-                },
-                "required": ["resource", "path"],
-            },
-        }
-    ]
 
-    def _dispatch_tool(self, name: str, inputs: dict) -> str:
-        if name == "scaffold_endpoint":
-            resource = inputs["resource"]
-            path = inputs["path"]
+    def _register_extra_tools(self, agent: Agent[SpecialistDeps, str]) -> None:
+        @agent.tool
+        def scaffold_endpoint(ctx: RunContext[SpecialistDeps], resource: str, path: str) -> str:
+            """Scaffold a FastAPI router with CRUD endpoints.
+
+            resource: Resource name (e.g. 'user', 'product').
+            path: Output file path.
+            """
             r = resource.capitalize()
             code = f'''from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
@@ -102,6 +94,8 @@ async def delete_{resource}(id: int):
         raise HTTPException(status_code=404, detail="{r} not found")
     del _store[id]
 '''
-            self._write_file(path, code)
-            return f"Scaffolded {r} CRUD router → {path}"
-        return super()._dispatch_tool(name, inputs)
+            full = ctx.deps.project_root / path
+            full.parent.mkdir(parents=True, exist_ok=True)
+            full.write_text(code, encoding="utf-8")
+            ctx.deps.result.files_written.append(path)
+            return f"Scaffolded {r} CRUD router \u2192 {path}"

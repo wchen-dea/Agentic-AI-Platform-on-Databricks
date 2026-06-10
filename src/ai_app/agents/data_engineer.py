@@ -1,4 +1,6 @@
-from .base import BaseSpecialistAgent
+from pydantic_ai import Agent, RunContext
+
+from .base import BaseSpecialistAgent, SpecialistDeps
 
 _SYSTEM = """You are a senior data engineer specializing in data pipelines, warehousing, and infrastructure.
 
@@ -29,49 +31,25 @@ class DataEngineerAgent(BaseSpecialistAgent):
     name = "data_engineer"
     role = "Data Engineer"
     system_prompt = _SYSTEM
-    extra_tools = [
-        {
-            "name": "scaffold_pipeline",
-            "description": "Scaffold a data pipeline with source, transform, and sink stages.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "pipeline_name": {"type": "string", "description": "Pipeline name."},
-                    "framework": {
-                        "type": "string",
-                        "enum": ["prefect", "airflow", "python"],
-                        "description": "Orchestration framework.",
-                    },
-                    "path": {"type": "string", "description": "Output file path."},
-                },
-                "required": ["pipeline_name", "framework", "path"],
-            },
-        },
-        {
-            "name": "scaffold_dbt_model",
-            "description": "Scaffold a dbt SQL model with tests.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "model_name": {"type": "string", "description": "Model name (snake_case)."},
-                    "materialization": {
-                        "type": "string",
-                        "enum": ["table", "view", "incremental"],
-                        "default": "incremental",
-                    },
-                    "path": {"type": "string", "description": "Output SQL file path."},
-                },
-                "required": ["model_name", "path"],
-            },
-        },
-    ]
 
-    def _dispatch_tool(self, name: str, inputs: dict) -> str:
-        if name == "scaffold_pipeline":
-            pname = inputs["pipeline_name"]
-            fw = inputs["framework"]
-            path = inputs["path"]
+    def _register_extra_tools(self, agent: Agent[SpecialistDeps, str]) -> None:
+        from typing import Literal as _Literal
 
+        @agent.tool
+        def scaffold_pipeline(
+            ctx: RunContext[SpecialistDeps],
+            pipeline_name: str,
+            framework: _Literal["prefect", "airflow", "python"],
+            path: str,
+        ) -> str:
+            """Scaffold a data pipeline with source, transform, and sink stages.
+
+            pipeline_name: Pipeline name.
+            framework: Orchestration framework.
+            path: Output file path.
+            """
+            pname = pipeline_name
+            fw = framework
             if fw == "prefect":
                 code = f'''"""Prefect pipeline: {pname}"""
 
@@ -210,13 +188,27 @@ def run(run_date: str = "today") -> None:
 if __name__ == "__main__":
     run()
 '''
-            self._write_file(path, code)
-            return f"Scaffolded {pname} pipeline ({fw}) → {path}"
+            full = ctx.deps.project_root / path
+            full.parent.mkdir(parents=True, exist_ok=True)
+            full.write_text(code, encoding="utf-8")
+            ctx.deps.result.files_written.append(path)
+            return f"Scaffolded {pname} pipeline ({fw}) \u2192 {path}"
 
-        if name == "scaffold_dbt_model":
-            model = inputs["model_name"]
-            mat = inputs.get("materialization", "incremental")
-            path = inputs["path"]
+        @agent.tool
+        def scaffold_dbt_model(
+            ctx: RunContext[SpecialistDeps],
+            model_name: str,
+            path: str,
+            materialization: _Literal["table", "view", "incremental"] = "incremental",
+        ) -> str:
+            """Scaffold a dbt SQL model with tests.
+
+            model_name: Model name (snake_case).
+            path: Output SQL file path.
+            materialization: dbt materialization strategy.
+            """
+            model = model_name
+            mat = materialization
             incremental_clause = (
                 "\n    {% if is_incremental() %}\n    where updated_at > (select max(updated_at) from {{ this }})\n    {% endif %}"
                 if mat == "incremental" else ""
@@ -248,7 +240,10 @@ final as (
 
 select * from final
 '''
-            self._write_file(path, code)
+            full = ctx.deps.project_root / path
+            full.parent.mkdir(parents=True, exist_ok=True)
+            full.write_text(code, encoding="utf-8")
+            ctx.deps.result.files_written.append(path)
 
             # Also write schema.yml test file
             schema_path = path.replace(".sql", "_schema.yml")
@@ -267,7 +262,8 @@ models:
         tests:
           - not_null
 '''
-            self._write_file(schema_path, schema)
-            return f"Scaffolded dbt model → {path}\nTests → {schema_path}"
-
-        return super()._dispatch_tool(name, inputs)
+            schema_full = ctx.deps.project_root / schema_path
+            schema_full.parent.mkdir(parents=True, exist_ok=True)
+            schema_full.write_text(schema, encoding="utf-8")
+            ctx.deps.result.files_written.append(schema_path)
+            return f"Scaffolded dbt model \u2192 {path}\nTests \u2192 {schema_path}"

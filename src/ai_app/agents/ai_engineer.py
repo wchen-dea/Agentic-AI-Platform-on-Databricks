@@ -1,4 +1,6 @@
-from .base import BaseSpecialistAgent
+from pydantic_ai import Agent, RunContext
+
+from .base import BaseSpecialistAgent, SpecialistDeps
 
 _SYSTEM = """You are a senior AI engineer specializing in LLM applications, RAG systems, and AI product development.
 
@@ -29,55 +31,30 @@ class AIEngineerAgent(BaseSpecialistAgent):
     name = "ai_engineer"
     role = "AI Engineer"
     system_prompt = _SYSTEM
-    extra_tools = [
-        {
-            "name": "scaffold_rag_pipeline",
-            "description": "Scaffold a RAG pipeline with embedding + retrieval boilerplate.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "vector_store": {
-                        "type": "string",
-                        "enum": [
-                            "chromadb",
-                            "databricks_uc",
-                            "databricks_feature_store",
-                            "databricks_lakebase_mcp",
-                            "pgvector",
-                            "pinecone",
-                            "in_memory",
-                        ],
-                        "description": "Vector store backend.",
-                    },
-                    "path": {"type": "string", "description": "Output file path."},
-                },
-                "required": ["vector_store", "path"],
-            },
-        },
-        {
-            "name": "scaffold_agent",
-            "description": "Scaffold a Claude agentic loop with tool use.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "agent_name": {"type": "string", "description": "Agent class name."},
-                    "tools": {
-                        "type": "array",
-                        "items": {"type": "string"},
-                        "description": "List of tool names to include.",
-                    },
-                    "path": {"type": "string", "description": "Output file path."},
-                },
-                "required": ["agent_name", "path"],
-            },
-        },
-    ]
 
-    def _dispatch_tool(self, name: str, inputs: dict) -> str:
-        if name == "scaffold_rag_pipeline":
-            vs = inputs["vector_store"]
-            path = inputs["path"]
+    def _register_extra_tools(self, agent: Agent[SpecialistDeps, str]) -> None:
+        from typing import Literal as _Literal
 
+        @agent.tool
+        def scaffold_rag_pipeline(
+            ctx: RunContext[SpecialistDeps],
+            vector_store: _Literal[
+                "chromadb",
+                "databricks_uc",
+                "databricks_feature_store",
+                "databricks_lakebase_mcp",
+                "pgvector",
+                "pinecone",
+                "in_memory",
+            ],
+            path: str,
+        ) -> str:
+            """Scaffold a RAG pipeline with embedding + retrieval boilerplate.
+
+            vector_store: Vector store backend.
+            path: Output file path.
+            """
+            vs = vector_store
             if vs == "chromadb":
                 vector_store_setup = (
                     "import chromadb\n"
@@ -204,13 +181,26 @@ if __name__ == "__main__":
     )
     print(rag_answer("What is the capital of France?"))
 '''
-            self._write_file(path, code)
-            return f"Scaffolded RAG pipeline ({vs}) → {path}"
+            full = ctx.deps.project_root / path
+            full.parent.mkdir(parents=True, exist_ok=True)
+            full.write_text(code, encoding="utf-8")
+            ctx.deps.result.files_written.append(path)
+            return f"Scaffolded RAG pipeline ({vs}) \u2192 {path}"
 
-        if name == "scaffold_agent":
-            agent_name = inputs["agent_name"]
-            tools_list = inputs.get("tools", ["search", "calculator"])
-            path = inputs["path"]
+        @agent.tool
+        def scaffold_agent(
+            ctx: RunContext[SpecialistDeps],
+            agent_name: str,
+            tools: list[str],
+            path: str,
+        ) -> str:
+            """Scaffold a Claude agentic loop with tool use.
+
+            agent_name: Agent class name.
+            tools: List of tool names to include.
+            path: Output file path.
+            """
+            tools_list = tools if tools else ["search", "calculator"]
             tools_schema = "\n".join(
                 f'''    {{
         "name": "{t}",
@@ -286,7 +276,8 @@ if __name__ == "__main__":
     agent = {agent_name}()
     print(agent.run("Hello! What can you do?"))
 '''
-            self._write_file(path, code)
-            return f"Scaffolded {agent_name} agent → {path}"
-
-        return super()._dispatch_tool(name, inputs)
+            full = ctx.deps.project_root / path
+            full.parent.mkdir(parents=True, exist_ok=True)
+            full.write_text(code, encoding="utf-8")
+            ctx.deps.result.files_written.append(path)
+            return f"Scaffolded {agent_name} agent \u2192 {path}"

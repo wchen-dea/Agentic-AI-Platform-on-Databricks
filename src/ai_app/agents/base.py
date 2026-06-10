@@ -1,187 +1,69 @@
 """
-BaseSpecialistAgent — shared agentic loop, file/shell tools, memory, and message bus.
+BaseSpecialistAgent — shared agentic loop using Pydantic AI for tool registration,
+typed dependency injection, and structured output validation.
+
+Tool schemas are auto-generated from Python type hints via pydantic-ai; no manual
+JSON schema blobs are needed. Dependencies are injected through RunContext[SpecialistDeps].
+AgentResult is a validated Pydantic model.
 """
 
 from __future__ import annotations
 
-import json
 import logging
 import os
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Literal
 
 import anthropic
+from pydantic import BaseModel, Field
+from pydantic_ai import Agent, RunContext
+from pydantic_ai.models.anthropic import AnthropicModel, AnthropicModelSettings
 
 from ..utils import SharedMemory, MessageBus, BROADCAST
 from ..integrations import DataSourceType, MCPDataSourceGateway
 
 MODEL = "claude-opus-4-7"
 MAX_TOKENS = 8096
-MAX_ITERATIONS = 20
-
 LOGGER = logging.getLogger(__name__)
 
-# ── Shared tool schemas ───────────────────────────────────────────────────────
+MessageType = Literal["context", "artifact", "question", "feedback", "decision", "broadcast"]
 
-COMMON_TOOLS: list[dict] = [
-    # ── File tools ────────────────────────────────────────────────────────────
-    {
-        "name": "write_file",
-        "description": "Write content to a file, creating directories as needed.",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "path": {"type": "string"},
-                "content": {"type": "string"},
-            },
-            "required": ["path", "content"],
-        },
-    },
-    {
-        "name": "read_file",
-        "description": "Read the content of a file.",
-        "input_schema": {
-            "type": "object",
-            "properties": {"path": {"type": "string"}},
-            "required": ["path"],
-        },
-    },
-    {
-        "name": "run_shell",
-        "description": "Run a shell command in the project root.",
-        "input_schema": {
-            "type": "object",
-            "properties": {"command": {"type": "string"}},
-            "required": ["command"],
-        },
-    },
-    {
-        "name": "list_files",
-        "description": "List files in a directory.",
-        "input_schema": {
-            "type": "object",
-            "properties": {"path": {"type": "string", "default": "."}},
-        },
-    },
-    {
-        "name": "mcp_retrieve",
-        "description": (
-            "Retrieve knowledge context from Databricks-backed MCP data sources. "
-            "Sources: databricks_uc | databricks_feature_store | databricks_lakebase_mcp."
-        ),
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "source_type": {
-                    "type": "string",
-                    "enum": [
-                        "databricks_uc",
-                        "databricks_feature_store",
-                        "databricks_lakebase_mcp",
-                    ],
-                },
-                "query": {"type": "string"},
-                "top_k": {"type": "integer", "default": 5},
-            },
-            "required": ["source_type", "query"],
-        },
-    },
-    # ── Memory tools ──────────────────────────────────────────────────────────
-    {
-        "name": "memory_write",
-        "description": (
-            "Store a value in shared memory so other agents can read it. "
-            "Use dot-namespaced keys, e.g. 'artifacts.backend.schema', "
-            "'decisions.auth_strategy', 'context.project_goals'."
-        ),
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "key": {"type": "string", "description": "Dot-namespaced key."},
-                "value": {"type": "string", "description": "Content to store."},
-                "summary": {"type": "string", "description": "One-line description of what this is."},
-            },
-            "required": ["key", "value"],
-        },
-    },
-    {
-        "name": "memory_read",
-        "description": "Read a value from shared memory by key.",
-        "input_schema": {
-            "type": "object",
-            "properties": {"key": {"type": "string"}},
-            "required": ["key"],
-        },
-    },
-    {
-        "name": "memory_list",
-        "description": "List all keys in shared memory, optionally filtered by prefix.",
-        "input_schema": {
-            "type": "object",
-            "properties": {"prefix": {"type": "string", "default": ""}},
-        },
-    },
-    # ── Message bus tools ─────────────────────────────────────────────────────
-    {
-        "name": "send_message",
-        "description": (
-            "Send a typed message to another specialist or broadcast to all. "
-            "Types: context | artifact | question | feedback | decision | broadcast. "
-            "Specialists: frontend, backend, ml_engineer, ai_engineer, "
-            "fullstack, data_engineer, data_scientist, supervisor."
-        ),
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "to": {"type": "string", "description": "Recipient agent name or '__all__' to broadcast."},
-                "type": {
-                    "type": "string",
-                    "enum": ["context", "artifact", "question", "feedback", "decision", "broadcast"],
-                },
-                "subject": {"type": "string"},
-                "content": {"type": "string"},
-            },
-            "required": ["to", "type", "subject", "content"],
-        },
-    },
-    {
-        "name": "read_messages",
-        "description": "Read messages sent to you (or broadcast to all).",
-        "input_schema": {
-            "type": "object",
-            "properties": {
-                "unread_only": {"type": "boolean", "default": True},
-                "type_filter": {
-                    "type": "string",
-                    "enum": ["context", "artifact", "question", "feedback", "decision", "broadcast"],
-                    "description": "Optional: filter by message type.",
-                },
-            },
-        },
-    },
-]
 
+# ── Typed dependencies ────────────────────────────────────────────────────────
 
 @dataclass
-class AgentResult:
+class SpecialistDeps:
+    """Dependencies injected into every tool call via RunContext."""
+    memory: SharedMemory
+    bus: MessageBus
+    project_root: Path
+    agent_name: str
+    verbose: bool
+    result: "AgentResult"
+
+
+# ── Structured output ─────────────────────────────────────────────────────────
+
+class AgentResult(BaseModel):
     specialist: str
     task: str
-    output: str
-    files_written: list[str] = field(default_factory=list)
-    commands_run: list[str] = field(default_factory=list)
-    memory_keys_written: list[str] = field(default_factory=list)
-    messages_sent: list[str] = field(default_factory=list)
+    output: str = ""
+    files_written: list[str] = Field(default_factory=list)
+    commands_run: list[str] = Field(default_factory=list)
+    memory_keys_written: list[str] = Field(default_factory=list)
+    messages_sent: list[str] = Field(default_factory=list)
     success: bool = True
     error: str = ""
 
+
+# ── Base specialist ───────────────────────────────────────────────────────────
 
 class BaseSpecialistAgent:
     name: str = "specialist"
     role: str = "software engineer"
     system_prompt: str = "You are a helpful software engineer."
-    extra_tools: list[dict] = []
 
     def __init__(
         self,
@@ -196,127 +78,203 @@ class BaseSpecialistAgent:
         self.verbose = verbose
         self.memory = memory or SharedMemory()
         self.bus = bus or MessageBus()
-        self.tools = COMMON_TOOLS + self.extra_tools
+        self._agent = self._build_agent()
 
-    # ── Tool execution ────────────────────────────────────────────────────────
+    # ── Agent construction ────────────────────────────────────────────────────
 
-    def _write_file(self, path: str, content: str) -> str:
-        full = self.project_root / path
-        full.parent.mkdir(parents=True, exist_ok=True)
-        full.write_text(content, encoding="utf-8")
-        return f"Written: {path} ({len(content)} chars)"
-
-    def _read_file(self, path: str) -> str:
-        full = self.project_root / path
-        return full.read_text(encoding="utf-8") if full.exists() else f"ERROR: {path} not found"
-
-    def _run_shell(self, command: str) -> str:
-        result = subprocess.run(
-            command, shell=True, capture_output=True, text=True,
-            cwd=self.project_root, timeout=120,
+    def _build_agent(self) -> Agent[SpecialistDeps, str]:
+        model = AnthropicModel(MODEL, anthropic_client=self.client)
+        settings = AnthropicModelSettings(
+            max_tokens=MAX_TOKENS,
+            thinking={"type": "adaptive"},
         )
-        out = result.stdout[-2000:] if result.stdout else ""
-        err = result.stderr[-1000:] if result.stderr else ""
-        return (out + ("\n" + err if err else "")).strip() or "(no output)"
+        agent: Agent[SpecialistDeps, str] = Agent(
+            model,
+            deps_type=SpecialistDeps,
+            result_type=str,
+            system_prompt=(
+                f"{self.system_prompt}\n\n"
+                "You have access to shared memory (memory_write/read/list) and a message bus "
+                "(send_message/read_messages) to collaborate with other agents. "
+                "For external knowledge, call mcp_retrieve against Databricks-backed sources. "
+                "Always store key decisions and artifacts to shared memory so teammates can build on your work. "
+                "Read your inbox at the start and reply to any questions directed at you."
+            ),
+            model_settings=settings,
+        )
+        self._register_common_tools(agent)
+        self._register_extra_tools(agent)
+        return agent
 
-    def _list_files(self, path: str = ".") -> str:
-        full = self.project_root / path
-        if not full.exists():
-            return f"ERROR: {path} not found"
-        entries = sorted(str(p.relative_to(self.project_root)) for p in full.rglob("*") if p.is_file())
-        return "\n".join(entries[:100]) or "(empty)"
+    def _register_common_tools(self, agent: Agent[SpecialistDeps, str]) -> None:  # noqa: C901
+        """Register shared file, shell, memory, messaging, and MCP tools."""
 
-    def _mcp_retrieve(self, source_type: str, query: str, top_k: int = 5) -> str:
-        try:
-            source = DataSourceType(source_type)
-            gateway = MCPDataSourceGateway.from_env(source)
-            docs = gateway.retrieve(query=query, top_k=top_k)
-            if not docs:
-                return "No documents returned."
-            lines = [f"[{i}] {doc}" for i, doc in enumerate(docs, start=1)]
-            return "\n\n".join(lines)
-        except KeyError as exc:
-            return (
-                "ERROR: Missing required environment variable for MCP retrieval: "
-                f"{exc}. Required: DATABRICKS_MCP_URL (and optional DATABRICKS_TOKEN/tool vars)."
+        @agent.tool
+        def write_file(ctx: RunContext[SpecialistDeps], path: str, content: str) -> str:
+            """Write content to a file, creating directories as needed."""
+            full = ctx.deps.project_root / path
+            full.parent.mkdir(parents=True, exist_ok=True)
+            full.write_text(content, encoding="utf-8")
+            ctx.deps.result.files_written.append(path)
+            if ctx.deps.verbose:
+                LOGGER.info("[%s] write_file %s", ctx.deps.agent_name, path)
+            return f"Written: {path} ({len(content)} chars)"
+
+        @agent.tool
+        def read_file(ctx: RunContext[SpecialistDeps], path: str) -> str:
+            """Read the content of a file."""
+            full = ctx.deps.project_root / path
+            return full.read_text(encoding="utf-8") if full.exists() else f"ERROR: {path} not found"
+
+        @agent.tool
+        def run_shell(ctx: RunContext[SpecialistDeps], command: str) -> str:
+            """Run a shell command in the project root."""
+            proc = subprocess.run(
+                command, shell=True, capture_output=True, text=True,
+                cwd=ctx.deps.project_root, timeout=120,
             )
-        except ValueError as exc:
-            return f"ERROR: {exc}"
-        except Exception as exc:
-            return f"ERROR: MCP retrieval failed: {exc}"
+            ctx.deps.result.commands_run.append(command)
+            if ctx.deps.verbose:
+                LOGGER.info("[%s] run_shell %s", ctx.deps.agent_name, command[:60])
+            out = proc.stdout[-2000:] if proc.stdout else ""
+            err = proc.stderr[-1000:] if proc.stderr else ""
+            return (out + ("\n" + err if err else "")).strip() or "(no output)"
 
-    def _memory_write(self, key: str, value: str, summary: str = "") -> str:
-        self.memory.write(key, value, agent=self.name, summary=summary)
-        return f"Stored in memory: {key}"
+        @agent.tool
+        def list_files(ctx: RunContext[SpecialistDeps], path: str = ".") -> str:
+            """List files in a directory."""
+            full = ctx.deps.project_root / path
+            if not full.exists():
+                return f"ERROR: {path} not found"
+            entries = sorted(
+                str(p.relative_to(ctx.deps.project_root))
+                for p in full.rglob("*") if p.is_file()
+            )
+            return "\n".join(entries[:100]) or "(empty)"
 
-    def _memory_read(self, key: str) -> str:
-        val = self.memory.read(key)
-        if val is None:
-            keys = self.memory.list_keys()
-            return f"Key '{key}' not found. Available keys: {keys}"
-        return str(val)
+        @agent.tool
+        def mcp_retrieve(
+            ctx: RunContext[SpecialistDeps],
+            source_type: Literal[
+                "databricks_uc",
+                "databricks_feature_store",
+                "databricks_lakebase_mcp",
+            ],
+            query: str,
+            top_k: int = 5,
+        ) -> str:
+            """Retrieve knowledge context from Databricks-backed MCP data sources.
 
-    def _memory_list(self, prefix: str = "") -> str:
-        keys = self.memory.list_keys(prefix)
-        if not keys:
-            return f"No keys{f' with prefix {prefix!r}' if prefix else ''}."
-        lines = []
-        for k in keys:
-            meta = self.memory.read_with_meta(k)
-            if meta:
-                lines.append(f"  {k}  [{meta['agent']}]  {meta['summary'] or str(meta['value'])[:50]}")
-        return "\n".join(lines)
+            Sources: databricks_uc | databricks_feature_store | databricks_lakebase_mcp.
+            """
+            if ctx.deps.agent_name == "ml_engineer" and source_type != "databricks_feature_store":
+                return (
+                    "ERROR: ml_engineer is restricted to Feature Store retrieval only. "
+                    "Use source_type='databricks_feature_store'."
+                )
+            try:
+                source = DataSourceType(source_type)
+                gateway = MCPDataSourceGateway.from_env(source)
+                docs = gateway.retrieve(query=query, top_k=top_k)
+                if not docs:
+                    return "No documents returned."
+                return "\n\n".join(f"[{i}] {doc}" for i, doc in enumerate(docs, start=1))
+            except KeyError as exc:
+                return (
+                    f"ERROR: Missing required environment variable for MCP retrieval: {exc}. "
+                    "Required: DATABRICKS_MCP_URL (and optional DATABRICKS_TOKEN/tool vars)."
+                )
+            except Exception as exc:
+                return f"ERROR: MCP retrieval failed: {exc}"
 
-    def _send_message(self, to: str, type: str, subject: str, content: str) -> str:
-        msg = self.bus.post(
-            from_agent=self.name,
-            to=to if to != "broadcast" else BROADCAST,
-            type=type,  # type: ignore
-            subject=subject,
-            content=content,
-        )
-        return f"Message #{msg.id} sent to {to}: {subject!r}"
+        @agent.tool
+        def memory_write(
+            ctx: RunContext[SpecialistDeps],
+            key: Annotated[str, Field(description="Dot-namespaced key, e.g. 'artifacts.backend.schema'.")],
+            value: str,
+            summary: Annotated[str, Field(description="One-line description of what this is.")] = "",
+        ) -> str:
+            """Store a value in shared memory so other agents can read it."""
+            ctx.deps.memory.write(key, value, agent=ctx.deps.agent_name, summary=summary)
+            ctx.deps.result.memory_keys_written.append(key)
+            return f"Stored in memory: {key}"
 
-    def _read_messages(self, unread_only: bool = True, type_filter: str | None = None) -> str:
-        msgs = self.bus.read(self.name, unread_only=unread_only, type_filter=type_filter)  # type: ignore
-        if not msgs:
-            return "No messages."
-        parts = []
-        for m in msgs:
-            parts.append(
+        @agent.tool
+        def memory_read(ctx: RunContext[SpecialistDeps], key: str) -> str:
+            """Read a value from shared memory by key."""
+            val = ctx.deps.memory.read(key)
+            if val is None:
+                keys = ctx.deps.memory.list_keys()
+                return f"Key '{key}' not found. Available keys: {keys}"
+            return str(val)
+
+        @agent.tool
+        def memory_list(ctx: RunContext[SpecialistDeps], prefix: str = "") -> str:
+            """List all keys in shared memory, optionally filtered by prefix."""
+            keys = ctx.deps.memory.list_keys(prefix)
+            if not keys:
+                return f"No keys{f' with prefix {prefix!r}' if prefix else ''}."
+            lines = []
+            for k in keys:
+                meta = ctx.deps.memory.read_with_meta(k)
+                if meta:
+                    lines.append(
+                        f"  {k}  [{meta['agent']}]  {meta['summary'] or str(meta['value'])[:50]}"
+                    )
+            return "\n".join(lines)
+
+        @agent.tool
+        def send_message(
+            ctx: RunContext[SpecialistDeps],
+            to: Annotated[
+                str,
+                Field(
+                    description=(
+                        "Recipient agent name or '__all__' to broadcast. "
+                        "Specialists: frontend, backend, ml_engineer, ai_engineer, "
+                        "fullstack, data_engineer, data_scientist, supervisor."
+                    )
+                ),
+            ],
+            type: MessageType,
+            subject: str,
+            content: str,
+        ) -> str:
+            """Send a typed message to another specialist or broadcast to all."""
+            msg = ctx.deps.bus.post(
+                from_agent=ctx.deps.agent_name,
+                to=to if to != "broadcast" else BROADCAST,
+                type=type,  # type: ignore[arg-type]
+                subject=subject,
+                content=content,
+            )
+            ctx.deps.result.messages_sent.append(f"{to}:{subject}")
+            return f"Message #{msg.id} sent to {to}: {subject!r}"
+
+        @agent.tool
+        def read_messages(
+            ctx: RunContext[SpecialistDeps],
+            unread_only: bool = True,
+            type_filter: MessageType | None = None,
+        ) -> str:
+            """Read messages sent to you (or broadcast to all)."""
+            msgs = ctx.deps.bus.read(
+                ctx.deps.agent_name,
+                unread_only=unread_only,
+                type_filter=type_filter,  # type: ignore[arg-type]
+            )
+            if not msgs:
+                return "No messages."
+            return "\n\n".join(
                 f"--- Message #{m.id} from {m.from_agent} [{m.type}] ---\n"
                 f"Subject: {m.subject}\n{m.content}"
+                for m in msgs
             )
-        return "\n\n".join(parts)
 
-    def _dispatch_tool(self, name: str, inputs: dict) -> str:
-        if name == "write_file":
-            return self._write_file(inputs["path"], inputs["content"])
-        if name == "read_file":
-            return self._read_file(inputs["path"])
-        if name == "run_shell":
-            return self._run_shell(inputs["command"])
-        if name == "list_files":
-            return self._list_files(inputs.get("path", "."))
-        if name == "mcp_retrieve":
-            return self._mcp_retrieve(
-                source_type=inputs["source_type"],
-                query=inputs["query"],
-                top_k=inputs.get("top_k", 5),
-            )
-        if name == "memory_write":
-            return self._memory_write(inputs["key"], inputs["value"], inputs.get("summary", ""))
-        if name == "memory_read":
-            return self._memory_read(inputs["key"])
-        if name == "memory_list":
-            return self._memory_list(inputs.get("prefix", ""))
-        if name == "send_message":
-            return self._send_message(inputs["to"], inputs["type"], inputs["subject"], inputs["content"])
-        if name == "read_messages":
-            return self._read_messages(inputs.get("unread_only", True), inputs.get("type_filter"))
-        return f"ERROR: unknown tool {name}"
+    def _register_extra_tools(self, agent: Agent[SpecialistDeps, str]) -> None:
+        """Override in subclasses to register specialist-specific tools."""
 
-    # ── Agentic loop ──────────────────────────────────────────────────────────
+    # ── Public run ────────────────────────────────────────────────────────────
 
     def run(self, task: str, context: str = "") -> AgentResult:
         agent_logger = LOGGER.getChild(self.name)
@@ -325,7 +283,6 @@ class BaseSpecialistAgent:
 
         result = AgentResult(specialist=self.name, task=task)
 
-        # Inject current memory state and any unread messages into context
         mem_summary = self.memory.summary()
         unread = self.bus.read(self.name, unread_only=True)
         inbox = (
@@ -333,89 +290,38 @@ class BaseSpecialistAgent:
                 f"  #{m.id} from={m.from_agent} [{m.type}] {m.subject}: {m.content[:200]}"
                 for m in unread
             )
-            if unread
-            else "  (none)"
+            if unread else "  (none)"
         )
 
-        preamble = (
+        full_task = (
             f"=== SHARED MEMORY ===\n{mem_summary}\n\n"
-            f"=== YOUR INBOX (unread messages from other agents) ===\n{inbox}"
+            f"=== YOUR INBOX (unread messages from other agents) ===\n{inbox}\n\n"
+            f"=== YOUR TASK ===\n{task}"
         )
-        full_task = f"{preamble}\n\n=== YOUR TASK ===\n{task}"
         if context:
             full_task += f"\n\n=== CONTEXT FROM SUPERVISOR ===\n{context}"
 
-        messages: list[dict] = [{"role": "user", "content": full_task}]
-        system = [
-            {
-                "type": "text",
-                "text": (
-                    f"{self.system_prompt}\n\n"
-                    "You have access to shared memory (memory_write/read/list) and a message bus "
-                    "(send_message/read_messages) to collaborate with other agents. "
-                    "For external knowledge, you can call mcp_retrieve against Databricks-backed sources. "
-                    "Always store key decisions and artifacts to shared memory so teammates can build on your work. "
-                    "Read your inbox at the start and reply to any questions directed at you."
-                ),
-                "cache_control": {"type": "ephemeral"},
-            }
-        ]
+        deps = SpecialistDeps(
+            memory=self.memory,
+            bus=self.bus,
+            project_root=self.project_root,
+            agent_name=self.name,
+            verbose=self.verbose,
+            result=result,
+        )
 
-        for _ in range(MAX_ITERATIONS):
-            response = self.client.messages.create(
-                model=MODEL,
-                max_tokens=MAX_TOKENS,
-                thinking={"type": "adaptive"},
-                system=system,
-                tools=self.tools,
-                messages=messages,
-            )
-
-            messages.append({"role": "assistant", "content": response.content})
-
-            if response.stop_reason == "end_turn":
-                for block in response.content:
-                    if hasattr(block, "text"):
-                        result.output = block.text
-                break
-
-            if response.stop_reason != "tool_use":
-                result.output = f"Unexpected stop: {response.stop_reason}"
-                break
-
-            tool_results: list[dict] = []
-            for block in response.content:
-                if block.type != "tool_use":
-                    continue
-                tool_output = self._dispatch_tool(block.name, block.input)
-
-                if self.verbose:
-                    agent_logger.info("[%s] %s", block.name, json.dumps(block.input)[:60])
-
-                # Track side effects
-                if block.name == "write_file":
-                    result.files_written.append(block.input.get("path", ""))
-                elif block.name == "run_shell":
-                    result.commands_run.append(block.input.get("command", ""))
-                elif block.name == "memory_write":
-                    result.memory_keys_written.append(block.input.get("key", ""))
-                elif block.name == "send_message":
-                    result.messages_sent.append(
-                        f"{block.input.get('to')}:{block.input.get('subject','')}"
-                    )
-
-                tool_results.append({
-                    "type": "tool_result",
-                    "tool_use_id": block.id,
-                    "content": tool_output,
-                })
-
-            messages.append({"role": "user", "content": tool_results})
-        else:
-            result.output = "Max iterations reached."
+        try:
+            run_result = self._agent.run_sync(full_task, deps=deps)
+            result.output = run_result.data
+        except Exception as exc:
             result.success = False
+            result.error = str(exc)
+            result.output = f"Agent run failed: {exc}"
+            agent_logger.error("[%s] %s", self.name.upper(), exc)
 
         if self.verbose:
-            agent_logger.info("[%s] %s…", self.name.upper(), result.output[:100].replace(chr(10), " "))
+            agent_logger.info(
+                "[%s] %s\u2026", self.name.upper(), result.output[:100].replace("\n", " ")
+            )
 
         return result

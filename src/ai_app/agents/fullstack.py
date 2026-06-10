@@ -1,4 +1,6 @@
-from .base import BaseSpecialistAgent
+from pydantic_ai import Agent, RunContext
+
+from .base import BaseSpecialistAgent, SpecialistDeps
 
 _SYSTEM = """You are a senior full-stack engineer who can seamlessly work across the entire stack.
 
@@ -29,25 +31,21 @@ class FullStackAgent(BaseSpecialistAgent):
     name = "fullstack"
     role = "Full-Stack Engineer"
     system_prompt = _SYSTEM
-    extra_tools = [
-        {
-            "name": "scaffold_feature",
-            "description": "Scaffold a full-stack feature with API route + React page.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "feature": {"type": "string", "description": "Feature name (e.g. 'dashboard', 'auth')."},
-                    "base_path": {"type": "string", "description": "Base directory for the feature files."},
-                },
-                "required": ["feature", "base_path"],
-            },
-        }
-    ]
 
-    def _dispatch_tool(self, name: str, inputs: dict) -> str:
-        if name == "scaffold_feature":
-            feat = inputs["feature"]
-            base = inputs["base_path"].rstrip("/")
+    def _register_extra_tools(self, agent: Agent[SpecialistDeps, str]) -> None:
+        @agent.tool
+        def scaffold_feature(
+            ctx: RunContext[SpecialistDeps],
+            feature: str,
+            base_path: str,
+        ) -> str:
+            """Scaffold a full-stack feature with API route + React page.
+
+            feature: Feature name (e.g. 'dashboard', 'auth').
+            base_path: Base directory for the feature files.
+            """
+            feat = feature
+            base = base_path.rstrip("/")
             F = feat.capitalize()
 
             # API route (Next.js App Router)
@@ -104,7 +102,12 @@ export default function {F}Page() {{
   );
 }}
 '''
-            self._write_file(f"{base}/app/api/{feat}/route.ts", api_code)
-            self._write_file(f"{base}/app/{feat}/page.tsx", page_code)
-            return f"Scaffolded {F} feature:\n  API → {base}/app/api/{feat}/route.ts\n  Page → {base}/app/{feat}/page.tsx"
-        return super()._dispatch_tool(name, inputs)
+            for rel_path, src in [
+                (f"{base}/app/api/{feat}/route.ts", api_code),
+                (f"{base}/app/{feat}/page.tsx", page_code),
+            ]:
+                full = ctx.deps.project_root / rel_path
+                full.parent.mkdir(parents=True, exist_ok=True)
+                full.write_text(src, encoding="utf-8")
+                ctx.deps.result.files_written.append(rel_path)
+            return f"Scaffolded {F} feature:\n  API \u2192 {base}/app/api/{feat}/route.ts\n  Page \u2192 {base}/app/{feat}/page.tsx"

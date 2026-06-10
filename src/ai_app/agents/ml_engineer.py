@@ -1,4 +1,6 @@
-from .base import BaseSpecialistAgent
+from pydantic_ai import Agent, RunContext
+
+from .base import BaseSpecialistAgent, SpecialistDeps
 
 _SYSTEM = """You are a senior machine learning engineer specializing in model development, training pipelines, and MLOps.
 
@@ -28,45 +30,22 @@ class MLEngineerAgent(BaseSpecialistAgent):
     name = "ml_engineer"
     role = "Machine Learning Engineer"
     system_prompt = _SYSTEM
-    _MCP_ALLOWED_SOURCE = "databricks_feature_store"
-    extra_tools = [
-        {
-            "name": "scaffold_training_script",
-            "description": "Scaffold a PyTorch training script with train/val loop boilerplate.",
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "model_name": {"type": "string", "description": "Model class name."},
-                    "task": {
-                        "type": "string",
-                        "enum": ["classification", "regression"],
-                        "description": "Task type.",
-                    },
-                    "path": {"type": "string", "description": "Output file path."},
-                },
-                "required": ["model_name", "task", "path"],
-            },
-        }
-    ]
+    # mcp_retrieve restriction is enforced centrally in BaseSpecialistAgent via ctx.deps.agent_name.
 
-    def _dispatch_tool(self, name: str, inputs: dict) -> str:
-        if name == "mcp_retrieve":
-            source = inputs.get("source_type", self._MCP_ALLOWED_SOURCE)
-            if source != self._MCP_ALLOWED_SOURCE:
-                return (
-                    "ERROR: ml_engineer is restricted to Feature Store retrieval only. "
-                    "Use source_type='databricks_feature_store'."
-                )
-            return self._mcp_retrieve(
-                source_type=self._MCP_ALLOWED_SOURCE,
-                query=inputs["query"],
-                top_k=inputs.get("top_k", 5),
-            )
+    def _register_extra_tools(self, agent: Agent[SpecialistDeps, str]) -> None:
+        @agent.tool
+        def scaffold_training_script(
+            ctx: RunContext[SpecialistDeps],
+            model_name: str,
+            task: str,
+            path: str,
+        ) -> str:
+            """Scaffold a PyTorch training script with train/val loop boilerplate.
 
-        if name == "scaffold_training_script":
-            model_name = inputs["model_name"]
-            task = inputs["task"]
-            path = inputs["path"]
+            model_name: Model class name.
+            task: Task type — 'classification' or 'regression'.
+            path: Output file path.
+            """
             loss = "nn.CrossEntropyLoss()" if task == "classification" else "nn.MSELoss()"
             metric = "accuracy" if task == "classification" else "rmse"
             code = f'''"""Training script for {model_name} ({task})."""
@@ -177,6 +156,8 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 '''
-            self._write_file(path, code)
-            return f"Scaffolded {model_name} training script → {path}"
-        return super()._dispatch_tool(name, inputs)
+            full = ctx.deps.project_root / path
+            full.parent.mkdir(parents=True, exist_ok=True)
+            full.write_text(code, encoding="utf-8")
+            ctx.deps.result.files_written.append(path)
+            return f"Scaffolded {model_name} training script \u2192 {path}"
