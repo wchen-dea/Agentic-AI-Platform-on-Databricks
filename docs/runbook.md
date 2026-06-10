@@ -11,13 +11,22 @@ uv sync
 cp .env.example .env
 ```
 
-Required local environment variable:
+Required local environment variables:
 
 - ANTHROPIC_API_KEY
 
 Required shared-memory backend variable:
 
-- MONGODB_URI
+- MONGODB_URI (for example: mongodb://localhost:27017)
+
+Required message bus variable:
+
+- RABBITMQ_URL (default: amqp://guest:guest@localhost:5672/)
+
+Optional RabbitMQ credentials (used in docker-compose defaults):
+
+- RABBITMQ_USER (default: guest)
+- RABBITMQ_PASS (default: guest)
 
 Optional MongoDB memory configuration:
 
@@ -67,11 +76,13 @@ make build-wheel
 make clean
 ```
 
-Containerized run with MongoDB:
+Containerized run with MongoDB and RabbitMQ:
 
 ```bash
 docker compose -f container/docker-compose.yml up --build
 ```
+
+RabbitMQ management UI: http://localhost:15672 (guest/guest by default).
 
 ## Validation Checklist
 
@@ -83,17 +94,17 @@ make build-wheel
 
 Expected artifact:
 
-- dist/agentic_application-&lt;version&gt;-py3-none-any.whl
+- `dist/agentic_application-<version>-py3-none-any.whl`
 
 ## CI/CD Workflow
 
 Pipeline:
 
-- .github/workflows/databricks-cicd.yml
+- `.github/workflows/databricks-cicd.yml`
 
 Deploy helper:
 
-- scripts/databricks_deploy.sh
+- `scripts/databricks_deploy.sh`
 
 Stages:
 
@@ -126,11 +137,11 @@ DATABRICKS_VOLUME_PATH format:
 
 ## Deployment and Rollout Behavior
 
-scripts/databricks_deploy.sh performs:
+`scripts/databricks_deploy.sh` performs:
 
 1. Validation of required Databricks variables.
 2. Upload of wheel artifact to:
-  dbfs:/Volumes/&lt;catalog&gt;/&lt;schema&gt;/&lt;volume&gt;/releases/&lt;commit_sha&gt;/
+   `dbfs:/Volumes/<catalog>/<schema>/<volume>/releases/<commit_sha>/`
 3. Databricks App deploy from generated bundle at .databricks/app_bundle.
 4. App start and status retrieval for rollout visibility.
 
@@ -149,6 +160,6 @@ scripts/databricks_deploy.sh performs:
 ## Operational Notes
 
 - Shared memory is persisted in MongoDB using MONGODB_URI/MONGODB_DB/MONGODB_MEMORY_COLLECTION.
-- Inter-agent messages remain file-backed in .agent_messages.json in the project output root.
+- Inter-agent messages are routed through a RabbitMQ topic exchange (`agent_messages`). Each agent has a durable inbox queue (`agent_inbox.<name>`); configure with RABBITMQ_URL.
 - Use --reset-memory for clean reruns to avoid stale coordination context.
 - For production rollout, require manual workflow dispatch with deploy_prod=true.

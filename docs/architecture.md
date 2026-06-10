@@ -32,7 +32,7 @@ flowchart TB
 
   subgraph collaboration[Collaboration Plane]
     mem[SharedMemory]
-    bus[MessageBus]
+    bus[MessageBus / RabbitMQ]
   end
 
   subgraph integration[Integration Plane]
@@ -98,16 +98,14 @@ flowchart LR
 - Supervisor pattern: centralized planning, delegation, synthesis.
 - Specialist role pattern: domain-specialized behavior over shared capabilities.
 - Blackboard pattern: decoupled coordination through namespaced memory keys.
-- Event bus pattern: typed, asynchronous inter-agent communication.
+- Event bus pattern: typed, durable inter-agent communication via RabbitMQ.
 - Reviewer-revision loop: quality gating via explicit critique and rework.
 - Tool-dispatch loop: bounded iterative agent execution.
 - Adapter/Gateway pattern: unified external data access through MCP gateway.
 
 ## Databricks MCP Integration
 
-Core module:
-
-- src/ai_app/integrations/mcp_data_sources.py
+Core module: `src/ai_app/integrations/mcp_data_sources.py`.
 
 Supported source types:
 
@@ -117,14 +115,14 @@ Supported source types:
 
 Important behavior:
 
-- Retrieval paths are unified through gateway.retrieve(...).
+- Retrieval paths are unified through `gateway.retrieve(...)`.
 - Generated Databricks index flows are no-op by default; upstream pipelines own writes.
-- ml_engineer is restricted to Feature Store MCP retrieval only.
+- `ml_engineer` is restricted to Feature Store MCP retrieval only.
 
 ## Key Components
 
-- src/ai_app/main.py: CLI entrypoint and report output.
-- src/ai_app/supervisor.py: orchestration and feedback control.
-- src/ai_app/agents/base.py: specialist runtime loop and shared tools.
-- src/ai_app/utils/memory.py: MongoDB-backed shared state.
-- src/ai_app/utils/message_bus.py: typed message logging and inbox semantics.
+- `src/ai_app/main.py`: CLI entrypoint and report output.
+- `src/ai_app/supervisor.py`: orchestration and feedback control.
+- `src/ai_app/agents/base.py`: specialist runtime loop and shared tools.
+- `src/ai_app/utils/memory.py`: MongoDB-backed shared state.
+- `src/ai_app/utils/message_bus.py`: RabbitMQ-backed typed message bus (topic exchange, durable per-agent queues).

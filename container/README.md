@@ -2,13 +2,14 @@
 
 This folder provides Docker Compose orchestration for:
 
-- `mongodb`: MongoDB memory backend for shared memory.
+- `mongodb`: MongoDB backend for shared memory.
+- `rabbitmq`: RabbitMQ message bus for inter-agent communication.
 - `app`: Agent application container.
 
 ## Prerequisites
 
 - Docker Desktop or Docker Engine with Compose V2.
-- `ANTHROPIC_API_KEY` exported in your shell, or provided via Compose environment.
+- ANTHROPIC_API_KEY exported in your shell, or provided via Compose environment.
 
 ## Run
 
@@ -19,6 +20,11 @@ export ANTHROPIC_API_KEY=your_anthropic_api_key_here
 docker compose -f container/docker-compose.yml up --build
 ```
 
+By default, Compose configures:
+
+- MONGODB_URI as mongodb://mongodb:27017
+- RABBITMQ_URL as amqp://<user>:<pass>@rabbitmq:5672/
+
 Optional task overrides:
 
 ```bash
@@ -27,6 +33,10 @@ APP_PROJECT="/workspace/output" \
 APP_WORKERS=4 \
 docker compose -f container/docker-compose.yml up --build
 ```
+
+RabbitMQ management UI:
+
+- http://localhost:15672 (guest/guest by default)
 
 ## Stop and cleanup
 
