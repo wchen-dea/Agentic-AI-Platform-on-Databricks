@@ -56,6 +56,54 @@ flowchart TB
   mcp --> dsl
 ```
 
+## Project Frameworks Diagram
+
+```mermaid
+flowchart LR
+  subgraph app[Application Layer]
+    cli[CLI / argparse]
+    core[Supervisor + Specialist Agents]
+    prompt[Anthropic SDK]
+  end
+
+  subgraph runtime[Runtime & Collaboration]
+    mem[SharedMemory / pymongo]
+    msg[MessageBus / pika]
+    env[python-dotenv]
+    ui[rich]
+  end
+
+  subgraph data[Data & Retrieval]
+    mcp[MCPDataSourceGateway]
+    dbc[Databricks SQL Connector]
+    uc[Unity Catalog]
+    fs[Feature Store]
+    lb[Lakebase]
+  end
+
+  subgraph delivery[Build & Delivery]
+    uv[uv + setuptools]
+    docker[Docker Compose]
+    gh[GitHub Actions]
+    dbx[Databricks Deploy Script]
+  end
+
+  cli --> core
+  core --> prompt
+  core --> mem
+  core --> msg
+  core --> mcp
+  env --> core
+  ui --> cli
+  mcp --> dbc
+  dbc --> uc
+  dbc --> fs
+  dbc --> lb
+  uv --> docker
+  uv --> gh
+  gh --> dbx
+```
+
 ## Runtime Interaction
 
 ```text
