@@ -31,6 +31,7 @@ uv sync
 cp .env.example .env
 # set required variables (at minimum: ANTHROPIC_API_KEY)
 uv run multi-ai-agent --task "build a user authentication system"
+uv run multi-ai-agent --task "build a user authentication system" --implementation langgraph
 ```
 
 ## Useful Commands
@@ -40,6 +41,7 @@ make sync
 make run TASK="build a RAG chatbot"
 make run-quiet TASK="build a data pipeline"
 make run-reset TASK="redesign the recommendation engine"
+uv run multi-ai-agent --task "build a RAG chatbot" --implementation langgraph
 make build-wheel
 ```
 

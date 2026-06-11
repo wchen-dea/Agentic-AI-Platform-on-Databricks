@@ -15,6 +15,7 @@ Usage:
     uv run multi-ai-agent --task "set up an A/B test for our checkout flow" --project ./output
     uv run multi-ai-agent --task "create a RAG chatbot with FastAPI backend" --quiet
     uv run multi-ai-agent --task "build a churn prediction model" --show-memory --show-messages
+    uv run multi-ai-agent --task "build a churn prediction model" --implementation langgraph
 """
 
 import argparse
@@ -27,6 +28,7 @@ from pathlib import Path
 import anthropic
 from dotenv import load_dotenv
 
+from .supervisor_langgraph import LangGraphSupervisorAgent
 from .supervisor import SupervisorAgent
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[2] / ".env")
@@ -64,6 +66,12 @@ def parse_args() -> argparse.Namespace:
                    help="Suppress intermediate tool logs.")
     p.add_argument("--workers", type=int, default=4, metavar="N",
                    help="Max parallel specialist threads (default: 4).")
+    p.add_argument(
+        "--implementation",
+        choices=["classic", "langgraph"],
+        default="classic",
+        help="Orchestration implementation to use (default: classic).",
+    )
     p.add_argument("--show-memory", action="store_true",
                    help="Print shared memory snapshot in the final report.")
     p.add_argument("--show-messages", action="store_true",
@@ -126,7 +134,8 @@ def main() -> None:
         print(BANNER.format(task=args.task, project=project))
 
     client = anthropic.Anthropic(api_key=api_key)
-    supervisor = SupervisorAgent(
+    supervisor_cls = SupervisorAgent if args.implementation == "classic" else LangGraphSupervisorAgent
+    supervisor = supervisor_cls(
         client=client,
         project_root=str(project),
         verbose=not args.quiet,
