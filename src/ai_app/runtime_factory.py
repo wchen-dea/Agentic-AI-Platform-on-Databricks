@@ -12,6 +12,7 @@ import anthropic
 from .supervisor import SupervisorAgent
 from .supervisor_langgraph import LangGraphSupervisorAgent
 from .utils import MessageBus, SharedMemory
+from .utils.env import env_int
 
 ImplementationType = Literal["classic", "langgraph"]
 
@@ -42,18 +43,6 @@ class RuntimeContext:
     supervisor: SupervisorAgent | LangGraphSupervisorAgent
 
 
-def _env_int(name: str, default: int) -> int:
-    """Parse an integer env var and fall back to *default* on invalid values."""
-
-    raw = os.getenv(name)
-    if raw is None:
-        return default
-    try:
-        return int(raw)
-    except ValueError:
-        return default
-
-
 def config_from_env(
     project_root: str,
     implementation: ImplementationType | None = None,
@@ -65,7 +54,7 @@ def config_from_env(
     return RuntimeConfig(
         project_root=project_root,
         implementation=implementation or os.getenv("AI_APP_IMPLEMENTATION", "classic"),
-        max_workers=max_workers if max_workers is not None else _env_int("SUPERVISOR_MAX_WORKERS", 4),
+        max_workers=max_workers if max_workers is not None else env_int("SUPERVISOR_MAX_WORKERS", 4),
         verbose=verbose,
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY", ""),
         mongodb_uri=os.getenv("MONGODB_URI"),

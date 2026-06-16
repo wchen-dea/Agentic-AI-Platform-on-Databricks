@@ -183,10 +183,7 @@ if __name__ == "__main__":
     )
     print(rag_answer("What is the capital of France?"))
 '''
-            full = ctx.deps.project_root / path
-            full.parent.mkdir(parents=True, exist_ok=True)
-            full.write_text(code, encoding="utf-8")
-            ctx.deps.result.files_written.append(path)
+            self._write_scaffold_file(ctx, path, code)
             return f"Scaffolded RAG pipeline ({vs}) \u2192 {path}"
 
         @agent.tool
@@ -278,8 +275,5 @@ if __name__ == "__main__":
     agent = {agent_name}()
     print(agent.run("Hello! What can you do?"))
 '''
-            full = ctx.deps.project_root / path
-            full.parent.mkdir(parents=True, exist_ok=True)
-            full.write_text(code, encoding="utf-8")
-            ctx.deps.result.files_written.append(path)
+            self._write_scaffold_file(ctx, path, code)
             return f"Scaffolded {agent_name} agent \u2192 {path}"

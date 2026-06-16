@@ -150,10 +150,7 @@ if TARGET in df.columns:
 
 print("\\nEDA complete. Saved: missing_values.png, distributions.png, correlations.png, target.png")
 '''
-            full = ctx.deps.project_root / path
-            full.parent.mkdir(parents=True, exist_ok=True)
-            full.write_text(code, encoding="utf-8")
-            ctx.deps.result.files_written.append(path)
+            self._write_scaffold_file(ctx, path, code)
             return f"Scaffolded EDA script ({ds}) \u2192 {path}"
 
         @agent.tool
@@ -230,7 +227,7 @@ alpha = 0.05
 significant = p_value < alpha
 effect_size = (treatment.mean() - control.mean()) / control.std() if not is_binary else None
 
-print(f"\\n=== Results ({test_name}) ===")
+print(f"\\n=== Results ({{test_name}}) ===")
 print(f"  Statistic : {{z_stat:.4f}}")
 print(f"  p-value   : {{p_value:.4f}}")
 print(f"  Significant (α={{alpha}}): {{significant}}")
@@ -264,8 +261,5 @@ plt.close()
 verdict = "SHIP IT ✓" if significant else "NO SIGNIFICANT DIFFERENCE ✗"
 print(f"\\nVerdict: {{verdict}}")
 '''
-            full = ctx.deps.project_root / path
-            full.parent.mkdir(parents=True, exist_ok=True)
-            full.write_text(code, encoding="utf-8")
-            ctx.deps.result.files_written.append(path)
+            self._write_scaffold_file(ctx, path, code)
             return f"Scaffolded A/B test script ({metric}) \u2192 {path}"

@@ -10,9 +10,8 @@ AgentResult is a validated Pydantic model.
 from __future__ import annotations
 
 import logging
-import os
 import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Annotated, Literal
 
@@ -103,6 +102,26 @@ class BaseSpecialistAgent:
         self._register_common_tools(agent)
         self._register_extra_tools(agent)
         return agent
+
+    # ── Shared scaffold helpers ──────────────────────────────────────────────
+
+    def _write_scaffold_file(self, ctx: RunContext[SpecialistDeps], path: str, content: str) -> None:
+        """Write generated content and track the output path in AgentResult."""
+
+        full = ctx.deps.project_root / path
+        full.parent.mkdir(parents=True, exist_ok=True)
+        full.write_text(content, encoding="utf-8")
+        ctx.deps.result.files_written.append(path)
+
+    def _write_scaffold_files(
+        self,
+        ctx: RunContext[SpecialistDeps],
+        files: list[tuple[str, str]],
+    ) -> None:
+        """Write multiple generated files with shared tracking behavior."""
+
+        for path, content in files:
+            self._write_scaffold_file(ctx, path, content)
 
     def _register_common_tools(self, agent: Agent[SpecialistDeps, str]) -> None:  # noqa: C901
         """Register shared file, shell, memory, messaging, and MCP tools."""
@@ -230,7 +249,7 @@ class BaseSpecialistAgent:
                     description=(
                         "Recipient agent name or '__all__' to broadcast. "
                         "Specialists: frontend, backend, ml_engineer, ai_engineer, "
-                        "fullstack, data_engineer, data_scientist, supervisor."
+                        "fullstack, data_engineer, data_scientist, database_admin, supervisor."
                     )
                 ),
             ],

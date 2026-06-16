@@ -8,6 +8,7 @@ from .ai_engineer import AIEngineerAgent
 from .fullstack import FullStackAgent
 from .data_engineer import DataEngineerAgent
 from .data_scientist import DataScientistAgent
+from .database_admin import DatabaseAdminAgent
 from .registry import SpecialistSpec, SPECIALIST_CATALOG, SPECIALIST_NAMES, SPECIALIST_REGISTRY
 
 __all__ = [
@@ -20,6 +21,7 @@ __all__ = [
     "FullStackAgent",
     "DataEngineerAgent",
     "DataScientistAgent",
+    "DatabaseAdminAgent",
     "SpecialistSpec",
     "SPECIALIST_CATALOG",
     "SPECIALIST_NAMES",

@@ -32,6 +32,7 @@ flowchart TB
     fs[fullstack]
     de[data_engineer]
     ds[data_scientist]
+    dba[database_admin]
   end
 
   subgraph collaboration[Collaboration Plane]
@@ -147,6 +148,8 @@ User Task
      - mcp_retrieve
 ```
 
+Specialist routing now includes database operational delegation via `database_admin` for backup/restore drills, health checks, and incident-response runbooks.
+
 ## Agent Design Patterns
 
 ```mermaid
@@ -207,5 +210,6 @@ Important behavior:
 - `src/ai_app/supervisor.py`: classic orchestration loop with tool-use and feedback control.
 - `src/ai_app/supervisor_langgraph.py`: LangGraph state-machine orchestration implementation.
 - `src/ai_app/agents/base.py`: Pydantic AI agent, `SpecialistDeps` injection, `@agent.tool` registration, and `AgentResult` Pydantic model.
+- `src/ai_app/agents/database_admin.py`: specialist for database operations artifacts (health checks, ops runbooks, and reliability procedures).
 - `src/ai_app/utils/memory.py`: MongoDB-backed shared state with in-memory fallback when MongoDB is unavailable.
 - `src/ai_app/utils/message_bus.py`: RabbitMQ-backed typed message bus with in-memory fallback when RabbitMQ is unavailable.

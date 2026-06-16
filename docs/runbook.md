@@ -65,6 +65,12 @@ Optional runtime variables for MCP data retrieval:
 - UC_FEATURE_SCORE_COLUMN
 - LAKEBASE_TABLE
 
+## Specialist Coverage
+
+Current specialist roster includes: `frontend`, `backend`, `ml_engineer`, `ai_engineer`, `fullstack`, `data_engineer`, `data_scientist`, and `database_admin`.
+
+Use `database_admin` for operational DBA workflows such as backup/restore validation, health-check automation, performance triage, and incident runbook generation.
+
 ## Common Commands
 
 ```bash

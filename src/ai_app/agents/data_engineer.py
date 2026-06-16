@@ -190,10 +190,7 @@ def run(run_date: str = "today") -> None:
 if __name__ == "__main__":
     run()
 '''
-            full = ctx.deps.project_root / path
-            full.parent.mkdir(parents=True, exist_ok=True)
-            full.write_text(code, encoding="utf-8")
-            ctx.deps.result.files_written.append(path)
+            self._write_scaffold_file(ctx, path, code)
             return f"Scaffolded {pname} pipeline ({fw}) \u2192 {path}"
 
         @agent.tool
@@ -242,10 +239,7 @@ final as (
 
 select * from final
 '''
-            full = ctx.deps.project_root / path
-            full.parent.mkdir(parents=True, exist_ok=True)
-            full.write_text(code, encoding="utf-8")
-            ctx.deps.result.files_written.append(path)
+            self._write_scaffold_file(ctx, path, code)
 
             # Also write schema.yml test file
             schema_path = path.replace(".sql", "_schema.yml")
@@ -264,8 +258,5 @@ models:
         tests:
           - not_null
 '''
-            schema_full = ctx.deps.project_root / schema_path
-            schema_full.parent.mkdir(parents=True, exist_ok=True)
-            schema_full.write_text(schema, encoding="utf-8")
-            ctx.deps.result.files_written.append(schema_path)
+            self._write_scaffold_file(ctx, schema_path, schema)
             return f"Scaffolded dbt model \u2192 {path}\nTests \u2192 {schema_path}"

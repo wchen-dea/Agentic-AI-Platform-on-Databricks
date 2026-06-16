@@ -104,12 +104,11 @@ export default function {F}Page() {{
   );
 }}
 '''
-            for rel_path, src in [
+            self._write_scaffold_files(
+              ctx,
+              [
                 (f"{base}/app/api/{feat}/route.ts", api_code),
                 (f"{base}/app/{feat}/page.tsx", page_code),
-            ]:
-                full = ctx.deps.project_root / rel_path
-                full.parent.mkdir(parents=True, exist_ok=True)
-                full.write_text(src, encoding="utf-8")
-                ctx.deps.result.files_written.append(rel_path)
+              ],
+            )
             return f"Scaffolded {F} feature:\n  API \u2192 {base}/app/api/{feat}/route.ts\n  Page \u2192 {base}/app/{feat}/page.tsx"

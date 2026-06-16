@@ -42,6 +42,14 @@ Modern data engineering in this context emphasizes event-driven, cloud-native, g
 | fullstack | End-to-end product implementation |
 | data_engineer | ETL/ELT, orchestration, data platform |
 | data_scientist | EDA, experiments, statistical analysis |
+| database_admin | Database operations, backup/restore, performance, and governance |
+
+Operational activities now covered by the specialist team include:
+
+- Database health checks and maintenance runbooks.
+- Backup and restore validation workflows.
+- Query-performance triage and remediation patterns.
+- Incident-response checklists for database reliability events.
 
 ## Quick Start
 
@@ -99,6 +107,7 @@ agentic-application/
 │       ├── supervisor_langgraph.py
 │       ├── integrations/
 │       ├── agents/
+│       │   ├── database_admin.py
 │       │   └── registry.py
 │       ├── utils/
 │       │   ├── memory.py

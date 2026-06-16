@@ -96,8 +96,5 @@ async def delete_{resource}(id: int):
         raise HTTPException(status_code=404, detail="{r} not found")
     del _store[id]
 '''
-            full = ctx.deps.project_root / path
-            full.parent.mkdir(parents=True, exist_ok=True)
-            full.write_text(code, encoding="utf-8")
-            ctx.deps.result.files_written.append(path)
+            self._write_scaffold_file(ctx, path, code)
             return f"Scaffolded {r} CRUD router \u2192 {path}"

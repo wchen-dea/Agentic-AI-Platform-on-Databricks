@@ -14,7 +14,7 @@ The application must coordinate multiple specialist agents while preserving role
 Adopt a supervisor-specialist architecture with explicit control and collaboration boundaries:
 
 - A `SupervisorAgent` decomposes user tasks, routes work, requests peer review, and synthesizes outputs.
-- Specialist agents (`frontend`, `backend`, `ml_engineer`, `ai_engineer`, `fullstack`, `data_engineer`, `data_scientist`) execute delegated tasks.
+- Specialist agents (`frontend`, `backend`, `ml_engineer`, `ai_engineer`, `fullstack`, `data_engineer`, `data_scientist`, `database_admin`) execute delegated tasks.
 - Shared coordination primitives are provided through shared memory and typed inter-agent messaging.
 
 ## Consequences

@@ -19,7 +19,6 @@ Usage:
 """
 
 import argparse
-import json
 import logging
 import os
 import sys
@@ -28,23 +27,13 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from .runtime_factory import build_runtime, config_from_env
+from .utils.env import env_int
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[2] / ".env")
 
 LOGGER = logging.getLogger(__name__)
 LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s - %(message)s"
 
-
-def _env_int(name: str, default: int) -> int:
-    """Read an integer environment variable with safe fallback."""
-
-    raw = os.getenv(name)
-    if raw is None:
-        return default
-    try:
-        return int(raw)
-    except ValueError:
-        return default
 
 BANNER = """
 ╔══════════════════════════════════════════════════════════════════╗
@@ -68,7 +57,7 @@ def configure_logging(verbose: bool) -> None:
 def parse_args() -> argparse.Namespace:
     """Parse CLI arguments for task execution and output controls."""
 
-    default_workers = _env_int("SUPERVISOR_MAX_WORKERS", 4)
+    default_workers = env_int("SUPERVISOR_MAX_WORKERS", 4)
     default_impl = os.getenv("AI_APP_IMPLEMENTATION", "classic")
     p = argparse.ArgumentParser(
         description="Supervisor + specialist Claude agents with memory and messaging.",

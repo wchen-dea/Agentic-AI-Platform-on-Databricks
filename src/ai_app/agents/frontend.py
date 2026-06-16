@@ -62,10 +62,7 @@ export const {comp}: React.FC<{comp}Props> = ({{ className }}) => {{
 
 export default {comp};
 '''
-            full = ctx.deps.project_root / path
-            full.parent.mkdir(parents=True, exist_ok=True)
-            full.write_text(component_code, encoding="utf-8")
-            ctx.deps.result.files_written.append(path)
+            self._write_scaffold_file(ctx, path, component_code)
             result = f"Scaffolded {comp} \u2192 {path}"
             if with_test:
                 test_path = path.replace(".tsx", ".test.tsx").replace(".ts", ".test.ts")
@@ -78,9 +75,6 @@ describe("{comp}", () => {{
   }});
 }});
 '''
-                test_full = ctx.deps.project_root / test_path
-                test_full.parent.mkdir(parents=True, exist_ok=True)
-                test_full.write_text(test_code, encoding="utf-8")
-                ctx.deps.result.files_written.append(test_path)
+                self._write_scaffold_file(ctx, test_path, test_code)
                 result += f"\nScaffolded test \u2192 {test_path}"
             return result

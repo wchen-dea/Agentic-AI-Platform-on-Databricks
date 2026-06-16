@@ -158,8 +158,5 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 '''
-            full = ctx.deps.project_root / path
-            full.parent.mkdir(parents=True, exist_ok=True)
-            full.write_text(code, encoding="utf-8")
-            ctx.deps.result.files_written.append(path)
+            self._write_scaffold_file(ctx, path, code)
             return f"Scaffolded {model_name} training script \u2192 {path}"
