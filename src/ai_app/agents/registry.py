@@ -10,6 +10,7 @@ from .data_engineer import DataEngineerAgent
 from .data_scientist import DataScientistAgent
 from .database_admin import DatabaseAdminAgent
 from .frontend import FrontendAgent
+from .stream_engineer import StreamEngineerAgent
 from .fullstack import FullStackAgent
 from .ml_engineer import MLEngineerAgent
 
@@ -70,6 +71,12 @@ SPECIALIST_CATALOG: tuple[SpecialistSpec, ...] = (
         role="Database Administrator",
         description="DB operations, backup/restore, performance tuning, incident response.",
         agent_cls=DatabaseAdminAgent,
+    ),
+    SpecialistSpec(
+        key="stream_engineer",
+        role="Stream Engineer",
+        description="Kafka and Flink operations, consumer lag, checkpointing, incident response.",
+        agent_cls=StreamEngineerAgent,
     ),
 )
 

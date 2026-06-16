@@ -43,6 +43,7 @@ Modern data engineering in this context emphasizes event-driven, cloud-native, g
 | data_engineer | ETL/ELT, orchestration, data platform |
 | data_scientist | EDA, experiments, statistical analysis |
 | database_admin | Database operations, backup/restore, performance, and governance |
+| stream_engineer | Kafka and Flink operations, consumer lag, checkpointing, and incident response |
 
 Operational activities now covered by the specialist team include:
 
@@ -50,6 +51,8 @@ Operational activities now covered by the specialist team include:
 - Backup and restore validation workflows.
 - Query-performance triage and remediation patterns.
 - Incident-response checklists for database reliability events.
+- Kafka topic, consumer group, and broker operational runbooks.
+- Flink job lifecycle management, savepoint/restore procedures, and backpressure triage.
 
 ## Quick Start
 
@@ -108,6 +111,7 @@ agentic-application/
 │       ├── integrations/
 │       ├── agents/
 │       │   ├── database_admin.py
+│       │   ├── stream_engineer.py
 │       │   └── registry.py
 │       ├── utils/
 │       │   ├── memory.py

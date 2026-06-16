@@ -249,7 +249,7 @@ class BaseSpecialistAgent:
                     description=(
                         "Recipient agent name or '__all__' to broadcast. "
                         "Specialists: frontend, backend, ml_engineer, ai_engineer, "
-                        "fullstack, data_engineer, data_scientist, database_admin, supervisor."
+                        "fullstack, data_engineer, data_scientist, database_admin, stream_engineer, supervisor."
                     )
                 ),
             ],

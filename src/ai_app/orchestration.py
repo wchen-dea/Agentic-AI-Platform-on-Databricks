@@ -186,6 +186,7 @@ Your team:
   data_engineer  - ETL/ELT, Airflow, dbt, Spark, streaming
   data_scientist - EDA, statistics, A/B tests, forecasting
     database_admin - DB operations, backup/restore, performance, incident response
+  stream_engineer - Kafka and Flink operations, consumer lag, checkpointing, incident response
 
 Collaboration model:
 1. Write high-level decisions and goals to shared memory FIRST so all agents have context.
