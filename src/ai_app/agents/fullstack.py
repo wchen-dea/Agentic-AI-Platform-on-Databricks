@@ -1,3 +1,5 @@
+"""Full-stack specialist with end-to-end feature scaffolding tools."""
+
 from pydantic_ai import Agent, RunContext
 
 from .base import BaseSpecialistAgent, SpecialistDeps

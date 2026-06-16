@@ -1,10 +1,26 @@
 # Agentic Application
 
-Agentic Application is a supervisor-driven multi-agent engineering system powered by Claude (`claude-opus-4-7`).
+Agentic Application is an enterprise AI agent system for building and operationalizing one or more collaborating agents that can execute complex tasks.
 
-The platform coordinates specialist agents through shared memory, typed messaging, and feedback loops so teams can generate production-ready code and artifacts collaboratively.
+Instead of relying on a single model call, the platform combines multiple interacting components, including large language models (LLMs), classical machine learning (ML) models, enterprise data, and external tools, to achieve business goals reliably and efficiently.
 
-The runtime is assembled explicitly by a lightweight runtime factory, making dependency wiring and implementation selection environment-driven and test-friendly.
+The system is designed with built-in evaluation and governance so outputs can be measured against defined objectives while maintaining security, compliance, and accountability across the full workflow.
+
+In this repository, that model is implemented as a supervisor-driven multi-agent engineering runtime with specialist agents, shared memory, typed messaging, and environment-driven dependency wiring via the runtime factory.
+
+This repository is a reference project (proof-of-concept style) that demonstrates architecture, orchestration patterns, and collaboration primitives in a practical end-to-end setup.
+
+It is intentionally designed to be extended into real-time operational analytics support, where enterprise teams can evolve this foundation into production-grade data and AI workflows.
+
+Modern data engineering in this context emphasizes event-driven, cloud-native, governed, and automated data platforms that deliver trusted, real-time data products using software engineering principles.
+
+## Agent System Lifecycle
+
+- Prepare data: organize and preprocess enterprise data so it is accessible and relevant for agent reasoning and interactions.
+- Build agents: compose generative AI models, classical ML models, and tools for role-specific tasks.
+- Deploy agents: run agents in production settings with secure, reliable interactions across users and systems.
+- Evaluate performance: continuously measure output quality and progress against target outcomes.
+- Govern operations: enforce security, compliance, and ethical standards with end-to-end operational visibility.
 
 ## Why This Project
 

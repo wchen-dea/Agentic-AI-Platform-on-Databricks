@@ -11,6 +11,8 @@ from urllib import request
 
 
 class DataSourceType(str, Enum):
+    """Supported Databricks-backed MCP retrieval source types."""
+
     DATABRICKS_UC = "databricks_uc"
     DATABRICKS_FEATURE_STORE = "databricks_feature_store"
     DATABRICKS_LAKEBASE_MCP = "databricks_lakebase_mcp"
@@ -28,6 +30,8 @@ class MCPDataSourceGateway:
 
     @classmethod
     def from_env(cls, source_type: DataSourceType) -> "MCPDataSourceGateway":
+        """Build a gateway from environment variables and source-specific tool names."""
+
         return cls(
             source_type=source_type,
             mcp_url=os.environ["DATABRICKS_MCP_URL"],
@@ -46,11 +50,15 @@ class MCPDataSourceGateway:
         )
 
     def retrieve(self, query: str, top_k: int = 5) -> list[str]:
+        """Retrieve relevant documents for a query from the configured MCP source."""
+
         payload = self._payload_for_source(query=query, top_k=top_k)
         response = self._call_tool(tool_name=self.tool_map[self.source_type], payload=payload)
         return self._extract_documents(response)
 
     def _payload_for_source(self, query: str, top_k: int) -> dict[str, Any]:
+        """Build source-aware MCP tool arguments from shared env defaults."""
+
         catalog = os.environ.get("UC_CATALOG", "main")
         schema = os.environ.get("UC_SCHEMA", "default")
 
@@ -83,6 +91,8 @@ class MCPDataSourceGateway:
         }
 
     def _call_tool(self, tool_name: str, payload: dict[str, Any]) -> dict[str, Any]:
+        """Execute an HTTP MCP tool call and return parsed JSON response."""
+
         headers = {"Content-Type": "application/json"}
         if self.token:
             headers["Authorization"] = f"Bearer {self.token}"
@@ -94,6 +104,8 @@ class MCPDataSourceGateway:
             return json.loads(res.read().decode("utf-8"))
 
     def _extract_documents(self, response: dict[str, Any]) -> list[str]:
+        """Normalize heterogeneous MCP response shapes into plain document strings."""
+
         docs = response.get("documents")
         if isinstance(docs, list):
             return [str(d) for d in docs]

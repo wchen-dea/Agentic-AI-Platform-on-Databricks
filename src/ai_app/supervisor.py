@@ -32,6 +32,8 @@ LOGGER = logging.getLogger(__name__)
 
 @dataclass
 class SupervisorResult:
+    """Aggregated outcome of one supervisor run."""
+
     task: str
     specialist_results: list[AgentResult] = field(default_factory=list)
     final_output: str = ""
@@ -65,6 +67,8 @@ class SupervisorAgent:
     # ── Specialist factory ────────────────────────────────────────────────────
 
     def _make_specialist(self, name: str) -> Any:
+        """Instantiate a specialist with shared collaboration primitives."""
+
         cls = SPECIALIST_REGISTRY[name]
         return cls(
             client=self.client,
@@ -75,12 +79,16 @@ class SupervisorAgent:
         )
 
     def _call_specialist(self, name: str, task: str, context: str = "") -> AgentResult:
+        """Run one specialist task and persist the result in supervisor state."""
+
         agent = self._make_specialist(name)
         result = agent.run(task=task, context=context)
         self._specialist_results.append(result)
         return result
 
     def _call_parallel(self, calls: list[dict]) -> list[AgentResult]:
+        """Execute independent specialist calls concurrently."""
+
         results: list[AgentResult] = []
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_workers) as pool:
             futures = {
@@ -103,6 +111,8 @@ class SupervisorAgent:
     def _request_peer_review(
         self, reviewer: str, author: str, artifact_key: str, review_criteria: str
     ) -> str:
+        """Ask one specialist to review another specialist's artifact in memory."""
+
         artifact = self.memory.read(artifact_key)
         if artifact is None:
             return f"ERROR: artifact key '{artifact_key}' not in memory. Available: {self.memory.list_keys()}"
@@ -133,6 +143,8 @@ class SupervisorAgent:
         }, indent=2)
 
     def _request_revision(self, specialist: str, artifact_key: str, feedback_key: str) -> str:
+        """Ask an authoring specialist to revise work using stored feedback."""
+
         artifact = self.memory.read(artifact_key)
         feedback = self.memory.read(feedback_key)
 
@@ -165,6 +177,8 @@ class SupervisorAgent:
     # ── Tool dispatch ─────────────────────────────────────────────────────────
 
     def _dispatch_tool(self, tool_name: str, inputs: dict) -> str:
+        """Route supervisor tool calls to specialists, memory, or message-bus handlers."""
+
         # Parallel dispatch
         if tool_name == "call_specialists_parallel":
             calls = inputs["calls"]
@@ -238,6 +252,8 @@ class SupervisorAgent:
     # ── Main loop ─────────────────────────────────────────────────────────────
 
     def run(self, task: str) -> SupervisorResult:
+        """Run the supervisor control loop until completion or iteration limit."""
+
         if self.verbose:
             LOGGER.info("[SUPERVISOR] %s", task[:80])
 
@@ -249,6 +265,7 @@ class SupervisorAgent:
         system = [{"type": "text", "text": SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}]
 
         for _ in range(MAX_ITERATIONS):
+            # The assistant can either finish directly or request one or more tools.
             response = self.client.messages.create(
                 model=MODEL,
                 max_tokens=MAX_TOKENS,

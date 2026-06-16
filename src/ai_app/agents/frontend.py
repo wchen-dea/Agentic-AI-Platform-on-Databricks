@@ -1,3 +1,5 @@
+"""Frontend specialist with React/TypeScript component scaffolding tools."""
+
 from pydantic_ai import Agent, RunContext
 
 from .base import BaseSpecialistAgent, SpecialistDeps

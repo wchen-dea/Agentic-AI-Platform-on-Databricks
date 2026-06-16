@@ -36,6 +36,8 @@ LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s - %(message)s"
 
 
 def _env_int(name: str, default: int) -> int:
+    """Read an integer environment variable with safe fallback."""
+
     raw = os.getenv(name)
     if raw is None:
         return default
@@ -54,6 +56,8 @@ BANNER = """
 
 
 def configure_logging(verbose: bool) -> None:
+    """Configure global logging verbosity for the CLI run."""
+
     logging.basicConfig(
         level=logging.INFO if verbose else logging.WARNING,
         format=LOG_FORMAT,
@@ -62,6 +66,8 @@ def configure_logging(verbose: bool) -> None:
 
 
 def parse_args() -> argparse.Namespace:
+    """Parse CLI arguments for task execution and output controls."""
+
     default_workers = _env_int("SUPERVISOR_MAX_WORKERS", 4)
     default_impl = os.getenv("AI_APP_IMPLEMENTATION", "classic")
     p = argparse.ArgumentParser(
@@ -92,6 +98,8 @@ def parse_args() -> argparse.Namespace:
 
 
 def print_report(result, show_memory: bool = False, show_messages: bool = False) -> None:
+    """Render a readable terminal report from supervisor output."""
+
     print("\n" + "╔" + "═" * 68 + "╗")
     print("║" + "  FINAL REPORT".center(68) + "║")
     print("╚" + "═" * 68 + "╝\n")
@@ -129,6 +137,8 @@ def print_report(result, show_memory: bool = False, show_messages: bool = False)
 
 
 def main() -> None:
+    """CLI entrypoint that assembles runtime and executes one supervisor task."""
+
     args = parse_args()
     configure_logging(verbose=not args.quiet)
 

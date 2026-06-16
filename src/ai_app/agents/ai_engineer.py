@@ -1,3 +1,5 @@
+"""AI specialist focused on LLM application and RAG scaffolding tools."""
+
 from pydantic_ai import Agent, RunContext
 
 from .base import BaseSpecialistAgent, SpecialistDeps

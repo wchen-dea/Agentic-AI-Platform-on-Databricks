@@ -54,9 +54,7 @@ flowchart TB
   sup --> specialists
   lgs --> specialists
   specialists <--> collaboration
-  ai --> mcp
-  ml --> mcp
-  ds --> mcp
+  specialists --> mcp
   mcp --> dsu
   mcp --> dsf
   mcp --> dsl
@@ -68,11 +66,13 @@ flowchart TB
 flowchart LR
   subgraph app[Application Layer]
     cli[CLI / argparse]
-      rt[RuntimeFactory]
-      core[Supervisor + Specialist Agents]
-      cfg[settings.py]
-      orch[orchestration.py]
-      reg[agents/registry.py]
+    rt[runtime_factory.py]
+    sup[supervisor.py]
+    lgs[supervisor_langgraph.py]
+    base[agents/base.py]
+    orch[orchestration.py]
+    reg[agents/registry.py]
+    cfg[settings.py]
     pai[pydantic-ai]
     prompt[Anthropic SDK]
   end
@@ -81,12 +81,13 @@ flowchart LR
     mem[SharedMemory / pymongo]
     msg[MessageBus / pika]
     env[python-dotenv]
-    ui[rich]
+    conc[concurrent.futures + threading]
   end
 
   subgraph data[Data & Retrieval]
     mcp[MCPDataSourceGateway]
-    dbc[Databricks SQL Connector]
+    http[HTTP MCP call / urllib]
+    svc[Databricks MCP service]
     uc[Unity Catalog]
     fs[Feature Store]
     lb[Lakebase]
@@ -99,23 +100,30 @@ flowchart LR
     dbx[Databricks Deploy Script]
   end
 
-  cli --> core
   cli --> rt
-  rt --> core
+  rt --> sup
+  rt --> lgs
   rt --> cfg
-  core --> orch
-  core --> reg
-  core --> pai
+  sup --> orch
+  lgs --> orch
+  sup --> reg
+  lgs --> reg
+  sup --> base
+  lgs --> base
+  base --> pai
   pai --> prompt
-  core --> mem
-  core --> msg
-  core --> mcp
-  env --> core
-  ui --> cli
-  mcp --> dbc
-  dbc --> uc
-  dbc --> fs
-  dbc --> lb
+  rt --> mem
+  rt --> msg
+  env --> rt
+  sup --> mcp
+  lgs --> mcp
+  mcp --> http
+  http --> svc
+  svc --> uc
+  svc --> fs
+  svc --> lb
+  conc --> sup
+  conc --> lgs
   uv --> docker
   uv --> gh
   gh --> dbx
@@ -187,7 +195,7 @@ Important behavior:
 
 - Retrieval paths are unified through `gateway.retrieve(...)`.
 - Generated Databricks index flows are no-op by default; upstream pipelines own writes.
-- `ml_engineer` is restricted to Feature Store MCP retrieval only.
+- Any specialist can call `mcp_retrieve`; the shared tool policy restricts `ml_engineer` to Feature Store retrieval only.
 
 ## Key Components
 

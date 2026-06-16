@@ -4,6 +4,13 @@
 
 This runbook covers day-to-day operation of Agentic Application, including local execution, validation, packaging, and Databricks CI/CD rollout.
 
+It is architecture-aligned to the implemented runtime path:
+
+- `src/ai_app/runtime_factory.py`: assembly of Anthropic client, memory backend, message bus, and supervisor implementation.
+- `src/ai_app/supervisor.py` / `src/ai_app/supervisor_langgraph.py`: orchestration control plane.
+- `src/ai_app/utils/memory.py` / `src/ai_app/utils/message_bus.py`: collaboration plane backends.
+- `src/ai_app/integrations/mcp_data_sources.py`: Databricks MCP retrieval gateway.
+
 For architectural rationale and trade-offs, see [ADRs](adrs/README.md).
 
 ## Local Setup

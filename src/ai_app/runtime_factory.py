@@ -18,6 +18,8 @@ ImplementationType = Literal["classic", "langgraph"]
 
 @dataclass(frozen=True)
 class RuntimeConfig:
+    """Environment-driven configuration for assembling runtime dependencies."""
+
     project_root: str
     implementation: ImplementationType = "classic"
     max_workers: int = 4
@@ -31,6 +33,8 @@ class RuntimeConfig:
 
 @dataclass
 class RuntimeContext:
+    """Fully constructed runtime objects used by the CLI entrypoint."""
+
     config: RuntimeConfig
     client: anthropic.Anthropic
     memory: SharedMemory
@@ -39,6 +43,8 @@ class RuntimeContext:
 
 
 def _env_int(name: str, default: int) -> int:
+    """Parse an integer env var and fall back to *default* on invalid values."""
+
     raw = os.getenv(name)
     if raw is None:
         return default
@@ -54,6 +60,8 @@ def config_from_env(
     max_workers: int | None = None,
     verbose: bool = True,
 ) -> RuntimeConfig:
+    """Build a RuntimeConfig from explicit arguments plus environment defaults."""
+
     return RuntimeConfig(
         project_root=project_root,
         implementation=implementation or os.getenv("AI_APP_IMPLEMENTATION", "classic"),
@@ -68,6 +76,8 @@ def config_from_env(
 
 
 def build_runtime(config: RuntimeConfig) -> RuntimeContext:
+    """Construct and wire all runtime dependencies for the selected implementation."""
+
     if not config.anthropic_api_key:
         raise ValueError("ANTHROPIC_API_KEY not set. Copy .env.example to .env and add your key.")
 
@@ -82,6 +92,7 @@ def build_runtime(config: RuntimeConfig) -> RuntimeContext:
     )
     bus = MessageBus(url=config.rabbitmq_url)
 
+    # Keep implementation selection centralized so callers stay framework-agnostic.
     supervisor_cls: type[SupervisorAgent | LangGraphSupervisorAgent]
     supervisor_cls = SupervisorAgent if config.implementation == "classic" else LangGraphSupervisorAgent
     supervisor = supervisor_cls(

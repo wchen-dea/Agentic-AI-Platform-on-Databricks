@@ -1,3 +1,5 @@
+"""Data engineering specialist with ETL and dbt scaffolding helpers."""
+
 from pydantic_ai import Agent, RunContext
 
 from .base import BaseSpecialistAgent, SpecialistDeps

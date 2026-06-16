@@ -1,3 +1,5 @@
+"""Specialist agent classes and registry exports."""
+
 from .base import BaseSpecialistAgent, AgentResult
 from .frontend import FrontendAgent
 from .backend import BackendAgent

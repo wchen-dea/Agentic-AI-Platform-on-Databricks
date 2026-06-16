@@ -30,6 +30,8 @@ LOGGER = logging.getLogger(__name__)
 
 @dataclass
 class PlannedCall:
+    """One planned specialist invocation produced by the planning node."""
+
     specialist: str
     task: str
     context: str = ""
@@ -64,6 +66,8 @@ class LangGraphSupervisorAgent:
         self._graph = self._build_graph()
 
     def _build_graph(self):
+        """Compile the linear LangGraph state machine used for orchestration."""
+
         graph = StateGraph(GraphState)
         graph.add_node("plan", self._plan_node)
         graph.add_node("execute", self._execute_node)
@@ -75,6 +79,8 @@ class LangGraphSupervisorAgent:
         return graph.compile()
 
     def _make_specialist(self, name: str) -> Any:
+        """Create a specialist wired to the shared memory and message bus."""
+
         cls = SPECIALIST_REGISTRY[name]
         return cls(
             client=self.client,
@@ -85,12 +91,16 @@ class LangGraphSupervisorAgent:
         )
 
     def _call_specialist(self, name: str, task: str, context: str = "") -> AgentResult:
+        """Run a specialist call and track it for final reporting."""
+
         agent = self._make_specialist(name)
         result = agent.run(task=task, context=context)
         self._specialist_results.append(result)
         return result
 
     def _plan_node(self, state: GraphState) -> GraphState:
+        """Create grouped specialist calls from task + current shared memory context."""
+
         task = state["task"]
         mem_summary = self.memory.summary()
 
@@ -163,6 +173,8 @@ class LangGraphSupervisorAgent:
         return {"plan": [c.__dict__ for c in calls]}
 
     def _execute_node(self, state: GraphState) -> GraphState:
+        """Execute planned calls group-by-group, parallelizing within each group."""
+
         raw_plan = state.get("plan", [])
         calls = [
             PlannedCall(
@@ -220,6 +232,8 @@ class LangGraphSupervisorAgent:
         return {"specialist_results": outputs}
 
     def _synthesize_node(self, state: GraphState) -> GraphState:
+        """Synthesize a final report from specialist results and collaboration traces."""
+
         task = state["task"]
         results = state.get("specialist_results", [])
         mem_summary = self.memory.summary()
@@ -259,6 +273,8 @@ class LangGraphSupervisorAgent:
         return {"final_output": final_output}
 
     def run(self, task: str) -> SupervisorResult:
+        """Invoke the compiled graph and convert graph state into SupervisorResult."""
+
         if self.verbose:
             LOGGER.info("[LANGGRAPH][SUPERVISOR] %s", task[:80])
 

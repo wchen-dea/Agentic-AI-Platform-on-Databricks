@@ -1,3 +1,5 @@
+"""ML engineering specialist with model-training scaffolding tools."""
+
 from pydantic_ai import Agent, RunContext
 
 from .base import BaseSpecialistAgent, SpecialistDeps

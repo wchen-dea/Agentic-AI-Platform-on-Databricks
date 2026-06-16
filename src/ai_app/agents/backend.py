@@ -1,3 +1,5 @@
+"""Backend specialist with API and service scaffolding helpers."""
+
 from pydantic_ai import Agent, RunContext
 
 from .base import BaseSpecialistAgent, SpecialistDeps

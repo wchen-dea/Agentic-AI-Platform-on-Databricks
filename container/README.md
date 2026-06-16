@@ -6,6 +6,12 @@ This folder provides Docker Compose orchestration for:
 - `rabbitmq`: RabbitMQ message bus for inter-agent communication.
 - `app`: Agent application container.
 
+This mirrors the project collaboration architecture directly:
+
+- `src/ai_app/utils/memory.py` -> MongoDB (`MONGODB_URI`)
+- `src/ai_app/utils/message_bus.py` -> RabbitMQ (`RABBITMQ_URL`)
+- `src/ai_app/runtime_factory.py` -> runtime wiring for both backends
+
 ## Prerequisites
 
 - Docker Desktop or Docker Engine with Compose V2.

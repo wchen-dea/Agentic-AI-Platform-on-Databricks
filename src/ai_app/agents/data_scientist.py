@@ -1,3 +1,5 @@
+"""Data science specialist with EDA and experimentation scaffolding tools."""
+
 from pydantic_ai import Agent, RunContext
 
 from .base import BaseSpecialistAgent, SpecialistDeps
