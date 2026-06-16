@@ -101,8 +101,13 @@ For runtime operations and deployment details, see the runbook.
 
 ```text
 agentic-application/
+├── Makefile
+├── README.md
+├── pyproject.toml
+├── uv.lock
 ├── src/
 │   └── ai_app/
+│       ├── __init__.py
 │       ├── main.py
 │       ├── runtime_factory.py
 │       ├── settings.py
@@ -110,24 +115,46 @@ agentic-application/
 │       ├── supervisor.py
 │       ├── supervisor_langgraph.py
 │       ├── integrations/
+│       │   ├── __init__.py
+│       │   └── mcp_data_sources.py
 │       ├── agents/
+│       │   ├── __init__.py
+│       │   ├── base.py
+│       │   ├── frontend.py
+│       │   ├── backend.py
+│       │   ├── ml_engineer.py
+│       │   ├── ai_engineer.py
+│       │   ├── fullstack.py
+│       │   ├── data_engineer.py
+│       │   ├── data_scientist.py
 │       │   ├── database_admin.py
 │       │   ├── stream_engineer.py
 │       │   └── registry.py
 │       ├── utils/
+│       │   ├── __init__.py
+│       │   ├── env.py
 │       │   ├── memory.py
 │       │   └── message_bus.py
 │       └── resources/
+│           ├── application.json
+│           └── log4j.properties
 ├── docs/
 │   ├── adrs/
+│   │   ├── README.md
+│   │   ├── 0001-supervisor-specialist-orchestration.md
+│   │   ├── 0002-mongodb-shared-memory.md
+│   │   ├── 0003-rabbitmq-message-bus.md
+│   │   ├── 0004-databricks-mcp-gateway-constraints.md
+│   │   ├── 0005-pydantic-ai-tool-layer.md
+│   │   └── template.md
 │   ├── architecture.md
 │   └── runbook.md
 ├── container/
 │   ├── Dockerfile
 │   ├── docker-compose.yml
 │   └── README.md
-├── .github/workflows/
 ├── scripts/
-├── pyproject.toml
-└── uv.lock
+│   └── databricks_deploy.sh
+├── .github/workflows/
+│   └── databricks-cicd.yml
 ```
