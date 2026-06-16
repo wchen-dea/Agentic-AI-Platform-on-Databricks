@@ -28,6 +28,7 @@ Modern data engineering in this context emphasizes event-driven, cloud-native, g
 - Pydantic AI tool layer: auto-generated schemas, typed deps via `RunContext`, and validated `AgentResult`.
 - Collaboration primitives for memory sharing and inter-agent messaging.
 - Databricks-backed retrieval through an MCP gateway.
+- Real-time operational metrics from AWS CloudWatch and Grafana (Kafka, Flink, Aurora) are ingested into Databricks Lakebase, which serves as the agent knowledge base via `databricks_lakebase_mcp`.
 - Packaging and deployment support with `uv`, wheel builds, and Databricks CI/CD.
 - Explicit runtime assembly via `runtime_factory.py` for predictable startup behavior.
 

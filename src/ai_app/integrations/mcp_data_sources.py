@@ -1,4 +1,11 @@
-"""MCP-based integration layer for multiple Databricks-backed data sources."""
+"""
+MCP-based integration layer for multiple Databricks-backed data sources.
+
+Databricks Lakebase (`databricks_lakebase_mcp`) is the primary real-time knowledge
+base for operational metrics. AWS CloudWatch and Grafana collect metrics from Kafka,
+Flink, and Aurora, which are ingested into Lakebase in real-time. Agents use
+`mcp_retrieve` against `databricks_lakebase_mcp` to access this operational context.
+"""
 
 from __future__ import annotations
 
@@ -11,7 +18,12 @@ from urllib import request
 
 
 class DataSourceType(str, Enum):
-    """Supported Databricks-backed MCP retrieval source types."""
+    """
+    Supported Databricks-backed MCP retrieval source types.
+
+    databricks_lakebase_mcp is the primary knowledge base for real-time operational
+    metrics (Kafka, Flink, Aurora) ingested from AWS CloudWatch and Grafana.
+    """
 
     DATABRICKS_UC = "databricks_uc"
     DATABRICKS_FEATURE_STORE = "databricks_feature_store"
@@ -82,10 +94,17 @@ class MCPDataSourceGateway:
                 "top_k": top_k,
             }
 
+        # Lakebase is the real-time operational knowledge base fed by CloudWatch and
+        # Grafana metrics for Kafka, Flink, and Aurora. Use LAKEBASE_METRICS_TABLE
+        # to target the operational metrics table, or LAKEBASE_TABLE for general KB.
+        table = os.environ.get(
+            "LAKEBASE_METRICS_TABLE",
+            os.environ.get("LAKEBASE_TABLE", "knowledge_base_chunks"),
+        )
         return {
             "catalog": catalog,
             "schema": schema,
-            "table": os.environ.get("LAKEBASE_TABLE", "knowledge_base_chunks"),
+            "table": table,
             "query": query,
             "top_k": top_k,
         }

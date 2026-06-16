@@ -48,6 +48,11 @@ flowchart TB
     dsl[Databricks Lakebase]
   end
 
+  subgraph observability[Observability Pipeline]
+    cw[AWS CloudWatch]
+    grf[Grafana]
+  end
+
   cli --> rt
   rt --> sup
   rt --> lgs
@@ -60,6 +65,8 @@ flowchart TB
   mcp --> dsu
   mcp --> dsf
   mcp --> dsl
+  cw -->|metrics: Kafka / Flink / Aurora| grf
+  grf -->|real-time ingest| dsl
 ```
 
 ## Project Frameworks Diagram
@@ -191,15 +198,57 @@ Core module: `src/ai_app/integrations/mcp_data_sources.py`.
 
 Supported source types:
 
-- databricks_uc
-- databricks_feature_store
-- databricks_lakebase_mcp
+- `databricks_uc` — Unity Catalog general knowledge retrieval.
+- `databricks_feature_store` — Feature Store retrieval (restricted to `ml_engineer`).
+- `databricks_lakebase_mcp` — **Primary real-time operational knowledge base**. Lakebase is continuously populated from AWS CloudWatch and Grafana with metrics for Kafka brokers/topics, Flink jobs/checkpoints, and Aurora (RDS) database instances. Specialists use this source to ground operational analysis in current metric data.
 
 Important behavior:
 
 - Retrieval paths are unified through `gateway.retrieve(...)`.
 - Generated Databricks index flows are no-op by default; upstream pipelines own writes.
 - Any specialist can call `mcp_retrieve`; the shared tool policy restricts `ml_engineer` to Feature Store retrieval only.
+- `LAKEBASE_METRICS_TABLE` overrides the Lakebase table name for operational metrics, falling back to `LAKEBASE_TABLE`.
+
+## Observability and Metrics Pipeline
+
+```mermaid
+flowchart LR
+  subgraph sources[Infrastructure Sources]
+    kafka[Apache Kafka]
+    flink[Apache Flink]
+    aurora[AWS Aurora / RDS]
+  end
+
+  subgraph collection[Collection Layer]
+    cw[AWS CloudWatch]
+    grf[Grafana]
+  end
+
+  subgraph knowledge[Knowledge Base]
+    lb[Databricks Lakebase]
+  end
+
+  subgraph agents[Agent Retrieval]
+    mcp[MCPDataSourceGateway]
+    se[stream_engineer]
+    dba[database_admin]
+  end
+
+  kafka -->|metrics| cw
+  flink -->|metrics| cw
+  aurora -->|metrics| cw
+  cw --> grf
+  grf -->|real-time ingest| lb
+  lb --> mcp
+  mcp --> se
+  mcp --> dba
+```
+
+- AWS CloudWatch collects metrics from Kafka brokers and topics, Flink jobs and TaskManagers, and Aurora database instances.
+- Grafana provides visualization and acts as the pipeline stage that ingests these metrics into Databricks Lakebase in real-time.
+- Agents call `mcp_retrieve` with `source_type='databricks_lakebase_mcp'` to retrieve current metric snapshots, alert history, and performance trends from Lakebase before producing operational analysis or runbooks.
+- `stream_engineer` uses this pipeline for Kafka consumer-lag and Flink checkpoint data.
+- `database_admin` uses this pipeline for Aurora query latency, IOPS, and replication-lag data.
 
 ## Key Components
 

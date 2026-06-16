@@ -64,6 +64,7 @@ Optional runtime variables for MCP data retrieval:
 - UC_FEATURE_TEXT_COLUMN
 - UC_FEATURE_SCORE_COLUMN
 - LAKEBASE_TABLE
+- LAKEBASE_METRICS_TABLE (real-time operational metrics table in Lakebase; falls back to LAKEBASE_TABLE)
 
 ## Specialist Coverage
 
@@ -72,6 +73,12 @@ Current specialist roster includes: `frontend`, `backend`, `ml_engineer`, `ai_en
 Use `database_admin` for operational DBA workflows such as backup/restore validation, health-check automation, performance triage, and incident runbook generation.
 
 Use `stream_engineer` for Kafka and Flink operational workflows such as consumer-lag investigation, topic management, Flink job lifecycle (savepoint, restore, upgrade), backpressure triage, and streaming infrastructure health checks.
+
+## Observability Pipeline
+
+AWS CloudWatch collects metrics from Kafka brokers/topics, Flink jobs/checkpoints, and Aurora database instances. Grafana ingests these metrics into Databricks Lakebase in real-time.
+
+Agents retrieve operational context from Lakebase via `mcp_retrieve` with `source_type='databricks_lakebase_mcp'`. Set `LAKEBASE_METRICS_TABLE` to the table that holds the real-time metrics (defaults to `LAKEBASE_TABLE`).
 
 ## Common Commands
 
