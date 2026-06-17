@@ -46,6 +46,31 @@ Recommended implementation note:
 
 - Keep these controls centralized in the control plane (orchestration and runtime factory configuration) so every specialist path inherits the same baseline protections.
 
+## Model Selection and Data Quality Balance
+
+Core principle: model capability alone is not the durable advantage. The system creates consistent value when model selection is tightly coupled with trusted, governed, high-quality data.
+
+Balance guidelines:
+
+- Model selection discipline:
+  - Route tasks to the smallest model that can meet quality and latency targets.
+  - Reserve premium models for high-ambiguity reasoning, final synthesis, and high-risk decisions.
+  - Version model choices by workflow so changes are measurable and reversible.
+- Data quality control discipline:
+  - Enforce schema validation, freshness checks, completeness thresholds, and lineage visibility before retrieval results are used.
+  - Block or downgrade confidence when critical data quality checks fail.
+  - Separate trusted production sources from exploratory or low-confidence sources.
+- Joint optimization controls:
+  - Evaluate output quality as a function of both model variant and data quality tier.
+  - Track error classes that originate from model limits versus data defects.
+  - Prioritize remediation in this order: data reliability first, then model tuning.
+
+Implementation pattern:
+
+- In the control plane, attach every specialist run to both a model policy and a data quality policy.
+- In the integration plane, expose retrieval responses with quality metadata (freshness, source trust level, validation status).
+- In the collaboration plane, persist decision evidence that records both model choice and data quality context for audit and replay.
+
 ## Domain-Specific Extension Blueprint
 
 The POC architecture is designed to be industry-agnostic at the orchestration layer. For domain-specific implementations (for example retail or healthcare), extend the system by adding domain capabilities per plane rather than rewriting core runtime components.
@@ -142,7 +167,7 @@ flowchart TB
   end
 
   subgraph l3[Layer 3 - Specialist Execution]
-    specs[frontend backend ai_engineer ml_engineer fullstack data_engineer data_scientist database_admin stream_engineer]
+    specs[AI Frontend Engineer AI Backend Engineer AI Engineer AI Machine Learning Engineer AI Full-Stack Engineer AI Data Engineer AI Data Scientist AI Database Admin AI Stream Engineer]
     tools[Shared specialist tools and contracts]
   end
 
@@ -289,7 +314,7 @@ User Task
      - mcp_retrieve
 ```
 
-Specialist routing now includes database operational delegation via `database_admin` for backup/restore drills, health checks, and incident-response runbooks, and streaming operational delegation via `stream_engineer` for Kafka cluster management and Flink job lifecycle operations.
+Specialist routing now includes database operational delegation via `database_admin` (AI Database Admin) for backup/restore drills, health checks, and incident-response runbooks, and streaming operational delegation via `stream_engineer` (AI Stream Engineer) for Kafka cluster management and Flink job lifecycle operations.
 Together with data and ML specialists, these roles form a domain operations team that can execute end-to-end domain management workflows.
 
 ## Agent Design Patterns
@@ -346,14 +371,14 @@ Core module: `src/ai_app/integrations/mcp_data_sources.py`.
 Supported source types:
 
 - `databricks_uc` — Unity Catalog general knowledge retrieval.
-- `databricks_feature_store` — Feature Store retrieval (restricted to `ml_engineer`).
+- `databricks_feature_store` — Feature Store retrieval (restricted to `ml_engineer`, AI Machine Learning Engineer).
 - `databricks_lakebase_mcp` — **Primary real-time operational knowledge base**. Lakebase is continuously populated from AWS CloudWatch and Grafana with metrics for Kafka brokers/topics, Flink jobs/checkpoints, and Aurora (RDS) database instances. Specialists use this source to ground operational analysis in current metric data.
 
 Important behavior:
 
 - Retrieval paths are unified through `gateway.retrieve(...)`.
 - Generated Databricks index flows are no-op by default; upstream pipelines own writes.
-- Any specialist can call `mcp_retrieve`; the shared tool policy restricts `ml_engineer` to Feature Store retrieval only.
+- Any specialist can call `mcp_retrieve`; the shared tool policy restricts `ml_engineer` (AI Machine Learning Engineer) to Feature Store retrieval only.
 - `LAKEBASE_METRICS_TABLE` overrides the Lakebase table name for operational metrics, falling back to `LAKEBASE_TABLE`.
 
 ## Observability Ingestion and Retrieval Pipeline
@@ -377,8 +402,8 @@ flowchart LR
 
   subgraph agents[Agent Retrieval]
     mcp[MCPDataSourceGateway]
-    se[stream_engineer]
-    dba[database_admin]
+    se[AI Stream Engineer stream_engineer]
+    dba[AI Database Admin database_admin]
   end
 
   kafka -->|metrics| cw
@@ -394,8 +419,8 @@ flowchart LR
 - AWS CloudWatch collects metrics from Kafka brokers and topics, Flink jobs and TaskManagers, and Aurora database instances.
 - Grafana provides visualization and acts as the pipeline stage that ingests these metrics into Databricks Lakebase in real-time.
 - Agents call `mcp_retrieve` with `source_type='databricks_lakebase_mcp'` to retrieve current metric snapshots, alert history, and performance trends from Lakebase before producing operational analysis or runbooks.
-- `stream_engineer` uses this pipeline for Kafka consumer-lag and Flink checkpoint data.
-- `database_admin` uses this pipeline for Aurora query latency, IOPS, and replication-lag data.
+- `stream_engineer` (AI Stream Engineer) uses this pipeline for Kafka consumer-lag and Flink checkpoint data.
+- `database_admin` (AI Database Admin) uses this pipeline for Aurora query latency, IOPS, and replication-lag data.
 
 ## Key Components
 

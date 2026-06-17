@@ -21,7 +21,7 @@ Adopt Pydantic AI as the tool and output layer for `BaseSpecialistAgent`:
 - Register tools with `@agent.tool` decorators; schemas are auto-generated from Python type hints and docstrings.
 - Inject runtime dependencies (memory, message bus, project root, result accumulator) through `RunContext[SpecialistDeps]`.
 - Replace the `AgentResult` dataclass with a Pydantic `BaseModel` for validated structured output.
-- Centralize ML engineer MCP restriction via `ctx.deps.agent_name` check in the shared `mcp_retrieve` tool rather than per-subclass overrides.
+- Centralize AI Machine Learning Engineer MCP restriction via `ctx.deps.agent_name` check (for specialist key `ml_engineer`) in the shared `mcp_retrieve` tool rather than per-subclass overrides.
 
 The supervisor orchestration layer (`SupervisorAgent`, peer review loop, parallel dispatch) is unchanged.
 

@@ -9,7 +9,7 @@
 
 The project integrates multiple Databricks-backed retrieval sources behind a single gateway (`MCPDataSourceGateway`). Without explicit constraints, source behavior, payload shape, and runtime configuration can drift over time. That drift can lead to fragile integrations and unclear agent expectations.
 
-Databricks Lakebase (`databricks_lakebase_mcp`) serves as the primary real-time operational knowledge base for the platform. AWS CloudWatch collects metrics from Kafka brokers, Flink jobs, and Aurora (RDS) database instances. Grafana ingests these metrics into Lakebase in real-time. Operational specialists (`stream_engineer`, `database_admin`) query Lakebase via `mcp_retrieve` to ground their analysis in current infrastructure state.
+Databricks Lakebase (`databricks_lakebase_mcp`) serves as the primary real-time operational knowledge base for the platform. AWS CloudWatch collects metrics from Kafka brokers, Flink jobs, and Aurora (RDS) database instances. Grafana ingests these metrics into Lakebase in real-time. Operational specialists (`stream_engineer`, `database_admin`) query Lakebase via `mcp_retrieve` to ground their analysis in current infrastructure state; these map to AI Stream Engineer and AI Database Admin roles.
 
 ## Decision
 
@@ -18,7 +18,7 @@ Constrain Databricks MCP integration to a read-oriented, source-typed gateway co
 - `MCPDataSourceGateway.from_env(...)` requires `DATABRICKS_MCP_URL` and supports optional `DATABRICKS_TOKEN`.
 - Source selection is explicit via `DataSourceType`:
   - `databricks_uc` — Unity Catalog general knowledge retrieval.
-  - `databricks_feature_store` — Feature Store retrieval (restricted to `ml_engineer`).
+  - `databricks_feature_store` — Feature Store retrieval (restricted to `ml_engineer`, AI Machine Learning Engineer).
   - `databricks_lakebase_mcp` — Primary real-time operational knowledge base fed by CloudWatch and Grafana metrics for Kafka, Flink, and Aurora.
 - Tool names are configurable by environment and default to:
   - `unity_catalog_search`

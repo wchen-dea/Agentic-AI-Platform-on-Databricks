@@ -68,17 +68,17 @@ Implementation suggestion:
 
 ## Specialist Agents
 
-| Agent | Focus |
-| --- | --- |
-| frontend | React, TypeScript, Tailwind, accessibility |
-| backend | FastAPI, SQLAlchemy, auth, API design |
-| ml_engineer | Model training pipelines and MLOps workflows |
-| ai_engineer | LLM applications, RAG, tool use, prompts |
-| fullstack | End-to-end product implementation |
-| data_engineer | ETL/ELT, orchestration, data platform |
-| data_scientist | EDA, experiments, statistical analysis |
-| database_admin | Database operations, backup/restore, performance, and governance |
-| stream_engineer | Kafka and Flink operations, consumer lag, checkpointing, and incident response |
+| Specialist Key | Role | Focus |
+| --- | --- | --- |
+| frontend | AI Frontend Engineer | React, TypeScript, Tailwind, accessibility |
+| backend | AI Backend Engineer | FastAPI, SQLAlchemy, auth, API design |
+| ml_engineer | AI Machine Learning Engineer | Model training pipelines and MLOps workflows |
+| ai_engineer | AI Engineer | LLM applications, RAG, tool use, prompts |
+| fullstack | AI Full-Stack Engineer | End-to-end product implementation |
+| data_engineer | AI Data Engineer | ETL/ELT, orchestration, data platform |
+| data_scientist | AI Data Scientist | EDA, experiments, statistical analysis |
+| database_admin | AI Database Admin | Database operations, backup/restore, performance, and governance |
+| stream_engineer | AI Stream Engineer | Kafka and Flink operations, consumer lag, checkpointing, and incident response |
 
 Operational activities now covered by the specialist team include:
 
@@ -157,15 +157,15 @@ agentic-application/
 │       ├── agents/
 │       │   ├── __init__.py
 │       │   ├── base.py
-│       │   ├── frontend.py
-│       │   ├── backend.py
-│       │   ├── ml_engineer.py
+│       │   ├── ai_frontend_engineer.py
+│       │   ├── ai_backend_engineer.py
+│       │   ├── ai_machine_learning_engineer.py
 │       │   ├── ai_engineer.py
-│       │   ├── fullstack.py
-│       │   ├── data_engineer.py
-│       │   ├── data_scientist.py
-│       │   ├── database_admin.py
-│       │   ├── stream_engineer.py
+│       │   ├── ai_fullstack_engineer.py
+│       │   ├── ai_data_engineer.py
+│       │   ├── ai_data_scientist.py
+│       │   ├── ai_database_admin.py
+│       │   ├── ai_stream_engineer.py
 │       │   └── registry.py
 │       ├── utils/
 │       │   ├── __init__.py

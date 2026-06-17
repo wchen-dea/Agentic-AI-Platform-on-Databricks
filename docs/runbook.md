@@ -70,7 +70,17 @@ Optional runtime variables for MCP data retrieval:
 
 ## Specialist Coverage
 
-Current specialist roster includes: `frontend`, `backend`, `ml_engineer`, `ai_engineer`, `fullstack`, `data_engineer`, `data_scientist`, `database_admin`, and `stream_engineer`.
+Current specialist roster includes:
+
+- `frontend` (AI Frontend Engineer)
+- `backend` (AI Backend Engineer)
+- `ml_engineer` (AI Machine Learning Engineer)
+- `ai_engineer` (AI Engineer)
+- `fullstack` (AI Full-Stack Engineer)
+- `data_engineer` (AI Data Engineer)
+- `data_scientist` (AI Data Scientist)
+- `database_admin` (AI Database Admin)
+- `stream_engineer` (AI Stream Engineer)
 
 Domain operations intent:
 
@@ -78,9 +88,9 @@ Domain operations intent:
 - `database_admin` and `stream_engineer` cover operational reliability for domain-serving data infrastructure.
 - `backend`, `frontend`, and `fullstack` cover delivery surfaces that expose domain intelligence to users and systems.
 
-Use `database_admin` for operational DBA workflows such as backup/restore validation, health-check automation, performance triage, and incident runbook generation.
+Use `database_admin` (AI Database Admin) for operational DBA workflows such as backup/restore validation, health-check automation, performance triage, and incident runbook generation.
 
-Use `stream_engineer` for Kafka and Flink operational workflows such as consumer-lag investigation, topic management, Flink job lifecycle (savepoint, restore, upgrade), backpressure triage, and streaming infrastructure health checks.
+Use `stream_engineer` (AI Stream Engineer) for Kafka and Flink operational workflows such as consumer-lag investigation, topic management, Flink job lifecycle (savepoint, restore, upgrade), backpressure triage, and streaming infrastructure health checks.
 
 ## Observability Pipeline
 
