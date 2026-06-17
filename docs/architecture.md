@@ -66,6 +66,27 @@ Packaging, deployment, and operations:
 - Docker and Docker Compose for local containerized runtime.
 - GitHub Actions + Databricks deploy scripts for CI/CD workflows.
 
+## AI Agent Comparison Reference
+
+The following comparison is a reference snapshot based on common market patterns. It is intended to position this platform's architecture, not to serve as a formal benchmark.
+
+| Category | Agent/Platform | Typical Strengths | How This Architecture Aligns |
+| --- | --- | --- | --- |
+| Pipeline Development | Dagster AI | Pipeline design, lineage-aware debugging, execution optimization | Aligns through specialist delegation, runbook-driven remediation, and explicit orchestration control loops |
+| Pipeline Development | Mage AI | Notebook-first pipeline prototyping and data quality checks | Aligns through rapid specialist iteration plus governed runtime assembly and deployment paths |
+| SQL Optimization | Dataherald | Natural language to SQL and query plan guidance | Aligns through backend/data specialist collaboration with MCP-grounded retrieval and review loops |
+| SQL Optimization | Operative AI | Query pattern analysis and performance recommendation explanation | Aligns through retrieval from Lakebase operational metrics and specialist-based optimization workflows |
+| Multi-Agent Collaboration | CrewAI | Role-based multi-agent orchestration | Directly aligned with supervisor-specialist orchestration and typed collaboration primitives |
+| Multi-Agent Collaboration | LangChain Agents | Agent chains and workflow orchestration | Supported via optional LangGraph supervisor path and tool-dispatch execution model |
+| Enterprise Solutions | Tredence DataOps Agents | Domain-specific AI frameworks across industries | Aligns with this platform's domain extension blueprint for retail/healthcare and governed integration layers |
+| Enterprise Solutions | Geotab AI Agents | Large-scale operational analytics and automation | Aligns with observability-to-Lakebase ingestion and real-time specialist decision support |
+
+Positioning summary:
+
+- This project emphasizes governed, enterprise-ready orchestration over single-agent automation.
+- The strongest differentiators are typed collaboration (memory + bus), explicit runtime wiring, and Databricks MCP integration.
+- Domain-specific adaptation is achieved by extending prompts, playbooks, KPIs, and policies without replacing core orchestration.
+
 ```mermaid
 flowchart TB
   user[User Task / CLI]

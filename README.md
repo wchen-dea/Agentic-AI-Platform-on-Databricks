@@ -118,6 +118,7 @@ For runtime operations and deployment details, see the runbook.
 ## Documentation
 
 Runtime Stack quick link: see [Architecture -> Tech Stack](docs/architecture.md#tech-stack) for the end-to-end runtime, data, and delivery technologies used by this project.
+AI Agent Comparison quick link: see [Architecture -> AI Agent Comparison Reference](docs/architecture.md#ai-agent-comparison-reference) for a category-based comparison and platform positioning.
 
 - [Architecture](docs/architecture.md)
 - [Runbook](docs/runbook.md)
