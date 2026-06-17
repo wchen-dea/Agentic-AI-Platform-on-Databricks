@@ -219,7 +219,7 @@ User Task
      -> Anthropic client + SharedMemory + MessageBus
      -> SupervisorAgent or LangGraphSupervisorAgent
   -> Selected supervisor
-     -> call_<specialist> / call_specialists_parallel
+      -> call_ / call_specialists_parallel
      -> request_peer_review
      -> request_revision
   -> Specialists use shared tools:
