@@ -1,11 +1,30 @@
+# Python
 .venv/
 __pycache__/
 *.py[cod]
 *.egg-info/
 build/
 dist/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Runtime agent state
 .agent_memory.json
 .agent_messages.json
 output/
-.DS_Store
+
+# Databricks local bundle
 .databricks/
+
+# macOS
+.DS_Store
