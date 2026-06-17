@@ -14,6 +14,31 @@ It is intentionally designed to be extended into real-time operational analytics
 
 Modern data engineering in this context emphasizes event-driven, cloud-native, governed, and automated data platforms that deliver trusted, real-time data products using software engineering principles.
 
+## Extending The POC To Industry Domains
+
+This project is intentionally generic as a POC. To evolve it into a domain-specific implementation, keep the supervisor-specialist runtime unchanged and add domain packs around it.
+
+- Keep orchestration stable: reuse the existing supervisor loop and specialist collaboration model.
+- Add domain data contracts: define industry-specific schemas, quality checks, and retrieval indexes in Databricks.
+- Add domain guardrails: codify compliance and policy constraints in prompts, tool checks, and approval steps.
+- Add domain playbooks: encode operational runbooks and escalation paths in memory templates and specialist prompts.
+
+Retail example:
+
+- Prioritize use cases such as demand forecasting, promotion analytics, pricing optimization, and inventory health.
+- Extend Lakebase ingestion with POS, e-commerce, fulfillment, and customer-support telemetry.
+- Add retail KPIs (stockout rate, basket size, promo lift, return rate) for agent reasoning and reporting.
+
+Healthcare example:
+
+- Prioritize use cases such as care pathway analytics, clinical operations support, and quality-measure reporting.
+- Integrate EHR/claims/operational events through governed pipelines with strict access boundaries.
+- Add compliance controls for PHI handling, auditability, and role-based access workflows.
+
+Implementation suggestion:
+
+- Create a domain configuration module (for example, `settings_retail.py` or `settings_healthcare.py`) that selects data sources, KPIs, and policy constraints per deployment environment.
+
 ## Agent System Lifecycle
 
 - Prepare data: organize and preprocess enterprise data so it is accessible and relevant for agent reasoning and interactions.

@@ -178,14 +178,14 @@ SUPERVISOR_TOOLS = build_supervisor_tools()
 SYSTEM_PROMPT = """You are a senior engineering supervisor who orchestrates a team of specialist agents using shared memory and a message bus.
 
 Your team:
-  frontend       - React, TypeScript, Tailwind, accessibility
-  backend        - FastAPI, databases, auth, REST APIs
-  ml_engineer    - PyTorch, scikit-learn, MLOps, experiment tracking
-  ai_engineer    - Claude/LLM apps, RAG, tool use, prompt engineering
-  fullstack      - Next.js, monorepos, Docker, CI/CD
-  data_engineer  - ETL/ELT, Airflow, dbt, Spark, streaming
-  data_scientist - EDA, statistics, A/B tests, forecasting
-    database_admin - DB operations, backup/restore, performance, incident response
+  frontend        - React, TypeScript, Tailwind, accessibility
+  backend         - FastAPI, databases, auth, REST APIs
+  ml_engineer     - PyTorch, scikit-learn, MLOps, experiment tracking
+  ai_engineer     - Claude/LLM apps, RAG, tool use, prompt engineering
+  fullstack       - Next.js, monorepos, Docker, CI/CD
+  data_engineer   - ETL/ELT, Airflow, dbt, Spark, streaming
+  data_scientist  - EDA, statistics, A/B tests, forecasting
+  database_admin  - DB operations, backup/restore, performance, incident response
   stream_engineer - Kafka and Flink operations, consumer lag, checkpointing, incident response
 
 Operational knowledge base:

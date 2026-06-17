@@ -11,6 +11,27 @@ The application uses a supervisor-specialist architecture with four planes:
 - Collaboration Plane: shared memory and typed message bus.
 - Integration Plane: MCP gateway for Databricks-backed data sources.
 
+## Domain-Specific Extension Blueprint
+
+The POC architecture is designed to be industry-agnostic at the orchestration layer. For domain-specific implementations (for example retail or healthcare), extend the system by adding domain capabilities per plane rather than rewriting core runtime components.
+
+- Control Plane: keep decomposition and routing behavior stable; add domain objectives, success criteria, and approval gates.
+- Specialist Plane: keep shared specialist interfaces; add domain prompt packs, playbooks, and optional new specialists (for example `retail_ops_analyst`, `clinical_ops_analyst`).
+- Collaboration Plane: keep memory/message contracts; add domain namespaces, retention policy, and escalation patterns.
+- Integration Plane: keep MCP gateway abstraction; add domain-specific source mappings, feature indexes, and retrieval policies.
+
+Retail implementation notes:
+
+- Data domains: catalog, inventory, orders, pricing, promotions, returns, and fulfillment events.
+- Real-time signals: stockout risk, demand spikes, conversion drop, fulfillment delay, and fraud indicators.
+- Governance: product data quality checks, promotion policy validation, and customer-data access controls.
+
+Healthcare implementation notes:
+
+- Data domains: EHR encounters, lab events, claims, provider operations, and scheduling.
+- Real-time signals: throughput bottlenecks, quality-measure drift, readmission risk indicators, and care-delay alerts.
+- Governance: PHI-safe retrieval patterns, role-based access controls, audit trails, and policy-bound tool execution.
+
 ```mermaid
 flowchart TB
   cli[CLI / main.py]
