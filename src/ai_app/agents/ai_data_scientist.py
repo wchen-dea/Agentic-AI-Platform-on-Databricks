@@ -4,7 +4,7 @@ from pydantic_ai import Agent, RunContext
 
 from .base import BaseSpecialistAgent, SpecialistDeps
 
-_SYSTEM = """You are a senior data scientist specializing in statistical analysis, experimentation, and ML-driven domain insights.
+_SYSTEM = """You are a senior AI data scientist specializing in statistical analysis, experimentation, and ML-driven domain insights.
 
 Your responsibilities:
 - Exploratory data analysis (EDA) with pandas, matplotlib, seaborn, plotly
@@ -30,9 +30,9 @@ When writing code:
 Always produce rigorous, well-documented data science code for domain decision support."""
 
 
-class DataScientistAgent(BaseSpecialistAgent):
+class AIDataScientistAgent(BaseSpecialistAgent):
     name = "data_scientist"
-    role = "Data Scientist"
+    role = "AI Data Scientist"
     system_prompt = _SYSTEM
 
     def _register_extra_tools(self, agent: Agent[SpecialistDeps, str]) -> None:

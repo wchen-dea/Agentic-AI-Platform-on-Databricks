@@ -407,7 +407,7 @@ flowchart LR
 - `src/ai_app/supervisor.py`: classic orchestration loop with tool-use and feedback control.
 - `src/ai_app/supervisor_langgraph.py`: LangGraph state-machine orchestration implementation.
 - `src/ai_app/agents/base.py`: Pydantic AI agent, `SpecialistDeps` injection, `@agent.tool` registration, and `AgentResult` Pydantic model.
-- `src/ai_app/agents/database_admin.py`: specialist for database operations artifacts (health checks, ops runbooks, and reliability procedures).
-- `src/ai_app/agents/stream_engineer.py`: specialist for Kafka and Flink operational runbooks, health checks, and job-lifecycle procedures.
+- `src/ai_app/agents/ai_database_admin.py`: specialist for database operations artifacts (health checks, ops runbooks, and reliability procedures).
+- `src/ai_app/agents/ai_stream_engineer.py`: specialist for Kafka and Flink operational runbooks, health checks, and job-lifecycle procedures.
 - `src/ai_app/utils/memory.py`: MongoDB-backed shared state with in-memory fallback when MongoDB is unavailable.
 - `src/ai_app/utils/message_bus.py`: RabbitMQ-backed typed message bus with in-memory fallback when RabbitMQ is unavailable.

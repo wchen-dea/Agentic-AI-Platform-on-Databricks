@@ -4,7 +4,7 @@ from pydantic_ai import Agent, RunContext
 
 from .base import BaseSpecialistAgent, SpecialistDeps
 
-_SYSTEM = """You are a senior frontend engineer specializing in domain-facing React, TypeScript, Tailwind CSS, and modern web development.
+_SYSTEM = """You are a senior AI frontend engineer specializing in domain-facing React, TypeScript, Tailwind CSS, and modern web development.
 
 Your responsibilities:
 - Build responsive, accessible UI components (React/Vue/Svelte)
@@ -28,9 +28,9 @@ When writing code:
 Always produce working, production-ready frontend code for domain applications."""
 
 
-class FrontendAgent(BaseSpecialistAgent):
+class AIFrontendEngineerAgent(BaseSpecialistAgent):
     name = "frontend"
-    role = "Frontend Engineer"
+    role = "AI Frontend Engineer"
     system_prompt = _SYSTEM
 
     def _register_extra_tools(self, agent: Agent[SpecialistDeps, str]) -> None:

@@ -5,14 +5,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from .ai_engineer import AIEngineerAgent
-from .backend import BackendAgent
-from .data_engineer import DataEngineerAgent
-from .data_scientist import DataScientistAgent
-from .database_admin import DatabaseAdminAgent
-from .frontend import FrontendAgent
-from .stream_engineer import StreamEngineerAgent
-from .fullstack import FullStackAgent
-from .ml_engineer import MLEngineerAgent
+from .ai_backend_engineer import AIBackendEngineerAgent
+from .ai_data_engineer import AIDataEngineerAgent
+from .ai_data_scientist import AIDataScientistAgent
+from .ai_database_admin import AIDatabaseAdminAgent
+from .ai_frontend_engineer import AIFrontendEngineerAgent
+from .ai_stream_engineer import AIStreamEngineerAgent
+from .ai_fullstack_engineer import AIFullStackEngineerAgent
+from .ai_machine_learning_engineer import AIMachineLearningEngineerAgent
 
 
 @dataclass(frozen=True)
@@ -26,21 +26,21 @@ class SpecialistSpec:
 SPECIALIST_CATALOG: tuple[SpecialistSpec, ...] = (
     SpecialistSpec(
         key="frontend",
-        role="Frontend Engineer",
+        role="AI Frontend Engineer",
         description="React, TypeScript, Tailwind, a11y, state management.",
-        agent_cls=FrontendAgent,
+        agent_cls=AIFrontendEngineerAgent,
     ),
     SpecialistSpec(
         key="backend",
-        role="Backend Engineer",
+        role="AI Backend Engineer",
         description="FastAPI, databases, auth, REST APIs, Python services.",
-        agent_cls=BackendAgent,
+        agent_cls=AIBackendEngineerAgent,
     ),
     SpecialistSpec(
         key="ml_engineer",
-        role="ML Engineer",
+        role="AI Machine Learning Engineer",
         description="PyTorch, scikit-learn, training pipelines, MLOps.",
-        agent_cls=MLEngineerAgent,
+        agent_cls=AIMachineLearningEngineerAgent,
     ),
     SpecialistSpec(
         key="ai_engineer",
@@ -50,33 +50,33 @@ SPECIALIST_CATALOG: tuple[SpecialistSpec, ...] = (
     ),
     SpecialistSpec(
         key="fullstack",
-        role="Full-Stack Engineer",
+        role="AI Full-Stack Engineer",
         description="End-to-end features, Next.js, Docker, CI/CD.",
-        agent_cls=FullStackAgent,
+        agent_cls=AIFullStackEngineerAgent,
     ),
     SpecialistSpec(
         key="data_engineer",
-        role="Data Engineer",
+        role="AI Data Engineer",
         description="ETL/ELT, Airflow, dbt, Spark, streaming, SQL.",
-        agent_cls=DataEngineerAgent,
+        agent_cls=AIDataEngineerAgent,
     ),
     SpecialistSpec(
         key="data_scientist",
-        role="Data Scientist",
+        role="AI Data Scientist",
         description="EDA, statistics, A/B tests, forecasting.",
-        agent_cls=DataScientistAgent,
+        agent_cls=AIDataScientistAgent,
     ),
     SpecialistSpec(
         key="database_admin",
-        role="Database Administrator",
+        role="AI Database Admin",
         description="DB operations, backup/restore, performance tuning, incident response.",
-        agent_cls=DatabaseAdminAgent,
+        agent_cls=AIDatabaseAdminAgent,
     ),
     SpecialistSpec(
         key="stream_engineer",
-        role="Stream Engineer",
+        role="AI Stream Engineer",
         description="Kafka and Flink operations, consumer lag, checkpointing, incident response.",
-        agent_cls=StreamEngineerAgent,
+        agent_cls=AIStreamEngineerAgent,
     ),
 )
 

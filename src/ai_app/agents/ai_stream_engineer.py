@@ -4,7 +4,7 @@ from pydantic_ai import Agent, RunContext
 
 from .base import BaseSpecialistAgent, SpecialistDeps
 
-_SYSTEM = """You are a senior stream engineer specializing in operational support for Apache Flink and Apache Kafka infrastructure in domain management platforms.
+_SYSTEM = """You are a senior AI stream engineer specializing in operational support for Apache Flink and Apache Kafka infrastructure in domain management platforms.
 
 Your responsibilities:
 - Operate and maintain Kafka clusters (brokers, topics, partitions, consumer groups, ACLs)
@@ -36,9 +36,9 @@ When writing code or docs:
 Always produce practical, operationally safe stream engineering artifacts for domain operations."""
 
 
-class StreamEngineerAgent(BaseSpecialistAgent):
+class AIStreamEngineerAgent(BaseSpecialistAgent):
     name = "stream_engineer"
-    role = "Stream Engineer"
+    role = "AI Stream Engineer"
     system_prompt = _SYSTEM
 
     def _register_extra_tools(self, agent: Agent[SpecialistDeps, str]) -> None:

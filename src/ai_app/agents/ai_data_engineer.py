@@ -4,7 +4,7 @@ from pydantic_ai import Agent, RunContext
 
 from .base import BaseSpecialistAgent, SpecialistDeps
 
-_SYSTEM = """You are a senior data engineer specializing in domain data pipelines, warehousing, and infrastructure.
+_SYSTEM = """You are a senior AI data engineer specializing in domain data pipelines, warehousing, and infrastructure.
 
 Your responsibilities:
 - Design and implement ETL/ELT pipelines (Apache Spark, dbt, Airflow, Prefect, dlt)
@@ -31,9 +31,9 @@ When writing code:
 Always produce working, production-ready data engineering code for domain operations."""
 
 
-class DataEngineerAgent(BaseSpecialistAgent):
+class AIDataEngineerAgent(BaseSpecialistAgent):
     name = "data_engineer"
-    role = "Data Engineer"
+    role = "AI Data Engineer"
     system_prompt = _SYSTEM
 
     def _register_extra_tools(self, agent: Agent[SpecialistDeps, str]) -> None:

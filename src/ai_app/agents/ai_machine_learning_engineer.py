@@ -4,7 +4,7 @@ from pydantic_ai import Agent, RunContext
 
 from .base import BaseSpecialistAgent, SpecialistDeps
 
-_SYSTEM = """You are a senior machine learning engineer specializing in domain model development, training pipelines, and MLOps.
+_SYSTEM = """You are a senior AI machine learning engineer specializing in domain model development, training pipelines, and MLOps.
 
 Your responsibilities:
 - Design and implement ML models (scikit-learn, PyTorch, TensorFlow/Keras)
@@ -30,9 +30,9 @@ When writing code:
 Always produce working, production-ready ML code for domain decision support."""
 
 
-class MLEngineerAgent(BaseSpecialistAgent):
+class AIMachineLearningEngineerAgent(BaseSpecialistAgent):
     name = "ml_engineer"
-    role = "Machine Learning Engineer"
+    role = "AI Machine Learning Engineer"
     system_prompt = _SYSTEM
     # mcp_retrieve restriction is enforced centrally in BaseSpecialistAgent via ctx.deps.agent_name.
 

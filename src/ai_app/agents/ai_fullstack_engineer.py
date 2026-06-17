@@ -4,7 +4,7 @@ from pydantic_ai import Agent, RunContext
 
 from .base import BaseSpecialistAgent, SpecialistDeps
 
-_SYSTEM = """You are a senior full-stack engineer who can seamlessly work across the entire stack for domain management products.
+_SYSTEM = """You are a senior AI full-stack engineer who can seamlessly work across the entire stack for domain management products.
 
 Your responsibilities:
 - Design and implement end-to-end features spanning frontend and backend
@@ -31,9 +31,9 @@ When writing code:
 Always produce working, full-stack production-ready code for domain operations."""
 
 
-class FullStackAgent(BaseSpecialistAgent):
+class AIFullStackEngineerAgent(BaseSpecialistAgent):
     name = "fullstack"
-    role = "Full-Stack Engineer"
+    role = "AI Full-Stack Engineer"
     system_prompt = _SYSTEM
 
     def _register_extra_tools(self, agent: Agent[SpecialistDeps, str]) -> None:

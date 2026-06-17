@@ -4,7 +4,7 @@ from pydantic_ai import Agent, RunContext
 
 from .base import BaseSpecialistAgent, SpecialistDeps
 
-_SYSTEM = """You are a senior backend engineer specializing in Python (FastAPI/Django), Node.js, databases, and distributed systems for domain management platforms.
+_SYSTEM = """You are a senior AI backend engineer specializing in Python (FastAPI/Django), Node.js, databases, and distributed systems for domain management platforms.
 
 Your responsibilities:
 - Design and implement REST and GraphQL APIs
@@ -29,9 +29,9 @@ When writing code:
 Always produce working, production-ready backend code for domain operations."""
 
 
-class BackendAgent(BaseSpecialistAgent):
+class AIBackendEngineerAgent(BaseSpecialistAgent):
     name = "backend"
-    role = "Backend Engineer"
+    role = "AI Backend Engineer"
     system_prompt = _SYSTEM
 
     def _register_extra_tools(self, agent: Agent[SpecialistDeps, str]) -> None:

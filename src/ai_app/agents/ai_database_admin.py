@@ -4,7 +4,7 @@ from pydantic_ai import Agent, RunContext
 
 from .base import BaseSpecialistAgent, SpecialistDeps
 
-_SYSTEM = """You are a senior database administrator focused on operational excellence, reliability, and governance for domain data platforms.
+_SYSTEM = """You are a senior AI Database Admin focused on operational excellence, reliability, and governance for domain data platforms.
 
 Your responsibilities:
 - Operate relational and analytical databases in production-like environments
@@ -33,9 +33,9 @@ When writing code or docs:
 Always produce practical, production-ready DBA operations artifacts for domain management workflows."""
 
 
-class DatabaseAdminAgent(BaseSpecialistAgent):
+class AIDatabaseAdminAgent(BaseSpecialistAgent):
     name = "database_admin"
-    role = "Database Administrator"
+    role = "AI Database Admin"
     system_prompt = _SYSTEM
 
     def _register_extra_tools(self, agent: Agent[SpecialistDeps, str]) -> None:
@@ -195,3 +195,7 @@ if __name__ == "__main__":
 '''
             self._write_scaffold_file(ctx, path, content)
             return f"Scaffolded DB health check script ({name}) -> {path}"
+
+
+# Backward-compatible alias.
+AIDBAAgent = AIDatabaseAdminAgent
