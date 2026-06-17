@@ -23,6 +23,20 @@ Adopt Pydantic AI as the tool and output layer for `BaseSpecialistAgent`:
 - Replace the `AgentResult` dataclass with a Pydantic `BaseModel` for validated structured output.
 - Centralize AI Machine Learning Engineer MCP restriction via `ctx.deps.agent_name` check (for specialist key `ml_engineer`) in the shared `mcp_retrieve` tool rather than per-subclass overrides.
 
+### MCP Usage Clarification
+
+In this architecture, Pydantic AI and MCP play complementary roles:
+
+- Pydantic AI is the tool-orchestration layer.
+  - `mcp_retrieve` is registered once as a typed shared tool via `@agent.tool` in `BaseSpecialistAgent`.
+  - Tool input contracts (`source_type`, `query`, `top_k`) are validated from Python type hints before execution.
+  - `RunContext[SpecialistDeps]` injects runtime context (agent name, memory, bus, result accumulator) so MCP calls follow the same collaboration/audit path as other tools.
+- MCP transport and source routing are implemented in the integration gateway.
+  - `MCPDataSourceGateway` handles HTTP tool invocation, source-aware payload construction, and heterogeneous response normalization.
+  - Databricks source selection remains explicit (`databricks_uc`, `databricks_feature_store`, `databricks_lakebase_mcp`).
+
+This means MCP capability does not come from Pydantic AI itself; Pydantic AI makes MCP retrieval safe, typed, and uniformly consumable by all specialists.
+
 The supervisor orchestration layer (`SupervisorAgent`, peer review loop, parallel dispatch) is unchanged.
 
 ## Consequences
@@ -31,6 +45,7 @@ The supervisor orchestration layer (`SupervisorAgent`, peer review loop, paralle
 - Validates tool inputs with Pydantic before execution, so type errors surface at the call site.
 - Validates `AgentResult` fields at construction time, preventing invalid state.
 - Handles side-effect tracking (files written, memory keys, messages sent) uniformly in tool closures via `ctx.deps.result`.
+- Provides a consistent execution envelope for MCP retrieval (typed invocation, policy checks, and normalized usage across specialists).
 - Adds `pydantic-ai[anthropic]` as a direct dependency, replacing the bare `anthropic` package.
 
 ## Alternatives Considered

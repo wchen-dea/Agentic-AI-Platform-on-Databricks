@@ -1,197 +1,91 @@
 # Agentic Application
 
-Agentic Application is an enterprise AI system for modern data domain management using collaborating specialist agents.
+Agentic Application is a reference implementation for modern data domain management with collaborating AI specialists.
 
-Instead of relying on a single model call, the platform combines multiple interacting components, including large language models (LLMs), classical machine learning (ML) models, enterprise data, and external tools, to achieve business goals reliably and efficiently.
+Core idea:
 
-The system is designed with built-in evaluation and governance so outputs can be measured against defined objectives while maintaining security, compliance, and accountability across the full workflow.
+- Model capability is not the unique advantage.
+- Durable value comes from combining models with trusted data, typed tools, and governed orchestration.
 
-In this repository, that model is implemented as a supervisor-driven specialist runtime where domain-focused agents coordinate through shared memory, typed messaging, and environment-driven dependency wiring in the runtime factory.
+## What It Includes
 
-This repository is a reference project (proof-of-concept style) that demonstrates architecture, orchestration patterns, and collaboration primitives in a practical end-to-end setup.
+- Supervisor-specialist orchestration with quality gates (peer review and revision).
+- Typed tool layer built with Pydantic AI.
+- Shared collaboration primitives: memory + message bus.
+- MCP-based retrieval from Databricks-backed sources.
+- Operational grounding via Lakebase metrics (Kafka, Flink, Aurora from CloudWatch/Grafana pipeline).
+- Local/container runtime plus Databricks CI/CD deployment path.
 
-It is intentionally designed to be extended into real-time operational analytics support, where enterprise teams can evolve this foundation into production-grade domain data products and AI workflows.
+## Specialist Team
 
-Modern data engineering in this context emphasizes event-driven, cloud-native, governed, and automated platforms that deliver trusted, real-time domain data products using software engineering principles.
-
-## Data Domain Management Framing
-
-The operating model in this project centers on domain ownership and specialist delegation:
-
-- Domain goals are translated into specialist tasks by the supervisor control plane.
-- Specialists execute within clear role boundaries and exchange typed handoff artifacts.
-- Shared memory and message routing preserve cross-domain context for iterative decisioning.
-- MCP retrieval grounds decisions in current domain telemetry and governed enterprise data.
-
-## Extending The POC To Industry Domains
-
-This project is intentionally generic as a POC. To evolve it into a domain-specific implementation, keep the supervisor-specialist runtime unchanged and add domain packs around it.
-
-- Keep orchestration stable: reuse the existing supervisor loop and specialist collaboration model.
-- Add domain data contracts: define industry-specific schemas, quality checks, and retrieval indexes in Databricks.
-- Add domain guardrails: codify compliance and policy constraints in prompts, tool checks, and approval steps.
-- Add domain playbooks: encode operational runbooks and escalation paths in memory templates and specialist prompts.
-
-Retail example:
-
-- Prioritize use cases such as demand forecasting, promotion analytics, pricing optimization, and inventory health.
-- Extend Lakebase ingestion with POS, e-commerce, fulfillment, and customer-support telemetry.
-- Add retail KPIs (stockout rate, basket size, promo lift, return rate) for agent reasoning and reporting.
-
-Healthcare example:
-
-- Prioritize use cases such as care pathway analytics, clinical operations support, and quality-measure reporting.
-- Integrate EHR/claims/operational events through governed pipelines with strict access boundaries.
-- Add compliance controls for PHI handling, auditability, and role-based access workflows.
-
-Implementation suggestion:
-
-- Create a domain configuration module (for example, `settings_retail.py` or `settings_healthcare.py`) that selects data sources, KPIs, and policy constraints per deployment environment.
-
-## Domain Management Lifecycle
-
-- Prepare domain context: organize domain datasets, contracts, and operational telemetry for specialist reasoning.
-- Plan specialist work: decompose domain objectives into role-specific tasks and handoffs.
-- Execute and coordinate: run specialist workflows with shared memory, messaging, and MCP-grounded retrieval.
-- Evaluate domain outcomes: measure quality, latency, and KPI movement against target domain objectives.
-- Govern and improve: enforce security/compliance controls and continuously refine specialist playbooks.
-
-## Why This Project
-
-- Multi-agent orchestration with explicit specialist domain roles.
-- Pydantic AI tool layer: auto-generated schemas, typed deps via `RunContext`, and validated `AgentResult`.
-- Collaboration primitives for domain memory sharing and inter-agent messaging.
-- Databricks-backed retrieval through an MCP gateway.
-- Real-time operational metrics from AWS CloudWatch and Grafana (Kafka, Flink, Aurora) are ingested into Databricks Lakebase, which serves as the agent knowledge base via `databricks_lakebase_mcp`.
-- Packaging and deployment support with `uv`, wheel builds, and Databricks CI/CD.
-- Explicit runtime assembly via `runtime_factory.py` for predictable startup behavior.
-
-## Specialist Agents
-
-| Specialist Key | Role | Focus |
+| Specialist Key | Role | Primary Focus |
 | --- | --- | --- |
-| frontend | AI Frontend Engineer | React, TypeScript, Tailwind, accessibility |
-| backend | AI Backend Engineer | FastAPI, SQLAlchemy, auth, API design |
-| ml_engineer | AI Machine Learning Engineer | Model training pipelines and MLOps workflows |
-| ai_engineer | AI Engineer | LLM applications, RAG, tool use, prompts |
-| fullstack | AI Full-Stack Engineer | End-to-end product implementation |
-| data_engineer | AI Data Engineer | ETL/ELT, orchestration, data platform |
-| data_scientist | AI Data Scientist | EDA, experiments, statistical analysis |
-| database_admin | AI Database Admin | Database operations, backup/restore, performance, and governance |
-| stream_engineer | AI Stream Engineer | Kafka and Flink operations, consumer lag, checkpointing, and incident response |
-
-Operational activities now covered by the specialist team include:
-
-- Database health checks and maintenance runbooks.
-- Backup and restore validation workflows.
-- Query-performance triage and remediation patterns.
-- Incident-response checklists for database reliability events.
-- Kafka topic, consumer group, and broker operational runbooks.
-- Flink job lifecycle management, savepoint/restore procedures, and backpressure triage.
+| `frontend` | AI Frontend Engineer | UX and UI delivery surfaces |
+| `backend` | AI Backend Engineer | APIs, services, auth, data contracts |
+| `ml_engineer` | AI Machine Learning Engineer | Training pipelines and MLOps |
+| `ai_engineer` | AI Engineer | LLM apps, RAG, prompt/tool flows |
+| `fullstack` | AI Full-Stack Engineer | End-to-end feature delivery |
+| `data_engineer` | AI Data Engineer | ETL/ELT, orchestration, data platform |
+| `data_scientist` | AI Data Scientist | EDA, experimentation, statistical analysis |
+| `database_admin` | AI Database Admin | DB operations, reliability, governance |
+| `stream_engineer` | AI Stream Engineer | Kafka/Flink operations and incident response |
 
 ## Quick Start
 
 ```bash
 uv sync
 cp .env.example .env
-# set required variables (at minimum: ANTHROPIC_API_KEY)
+# set at minimum: ANTHROPIC_API_KEY
+
 uv run multi-ai-agent --task "build a user authentication system"
 uv run multi-ai-agent --task "build a user authentication system" --implementation langgraph
 ```
 
-Optional environment-driven runtime defaults:
-
-- `AI_APP_IMPLEMENTATION` (`classic` or `langgraph`)
-- `SUPERVISOR_MAX_WORKERS` (default: `4`)
-- `ANTHROPIC_MODEL` (default: `claude-opus-4-7`)
-- `ANTHROPIC_MAX_TOKENS` (default: `8096`)
-- `SUPERVISOR_MAX_ITERATIONS` (default: `40`)
-- `MONGODB_URI` / `MONGODB_DB` / `MONGODB_MEMORY_COLLECTION`
-- `RABBITMQ_URL`
-
-If MongoDB or RabbitMQ is unavailable, the app degrades to in-memory collaboration backends so local iteration can continue.
-
-## Useful Commands
+Useful commands:
 
 ```bash
 make sync
 make run TASK="build a RAG chatbot"
 make run-quiet TASK="build a data pipeline"
-make run-reset TASK="redesign the recommendation engine"
-uv run multi-ai-agent --task "build a RAG chatbot" --implementation langgraph
+make run-reset TASK="redesign recommendation engine"
 make build-wheel
 ```
 
-For runtime operations and deployment details, see the runbook.
+## Runtime Configuration
+
+Common environment controls:
+
+- `AI_APP_IMPLEMENTATION` (`classic` or `langgraph`)
+- `SUPERVISOR_MAX_WORKERS`
+- `SUPERVISOR_MAX_ITERATIONS`
+- `ANTHROPIC_MODEL`, `ANTHROPIC_MAX_TOKENS`
+- `MONGODB_URI` / `MONGODB_DB` / `MONGODB_MEMORY_COLLECTION`
+- `RABBITMQ_URL`
+- `DATABRICKS_MCP_URL`, `DATABRICKS_TOKEN`, MCP tool/source variables
+
+If MongoDB or RabbitMQ is unavailable, the runtime degrades to in-memory collaboration backends for local iteration.
+
+## Repository Layout
+
+```text
+src/ai_app/
+  agents/            # AI specialist implementations and registry
+  integrations/      # MCP data source gateway
+  utils/             # memory and message bus backends
+  orchestration.py   # supervisor prompt + tool contracts
+  supervisor.py      # classic orchestration
+  supervisor_langgraph.py
+  runtime_factory.py # dependency wiring from env
+```
 
 ## Documentation
-
-Runtime Stack quick link: see [Architecture -> Tech Stack](docs/architecture.md#tech-stack) for the end-to-end runtime, data, and delivery technologies used by this project.
-AI Agent Comparison quick link: see [Architecture -> AI Agent Comparison Reference](docs/architecture.md#ai-agent-comparison-reference) for a category-based comparison and platform positioning.
 
 - [Architecture](docs/architecture.md)
 - [Runbook](docs/runbook.md)
 - [ADRs](docs/adrs/README.md)
 - [Container Setup](container/README.md)
 
-## Project Structure
+Key ADRs:
 
-```text
-agentic-application/
-├── Makefile
-├── README.md
-├── pyproject.toml
-├── uv.lock
-├── src/
-│   └── ai_app/
-│       ├── __init__.py
-│       ├── main.py
-│       ├── runtime_factory.py
-│       ├── settings.py
-│       ├── orchestration.py
-│       ├── supervisor.py
-│       ├── supervisor_langgraph.py
-│       ├── integrations/
-│       │   ├── __init__.py
-│       │   └── mcp_data_sources.py
-│       ├── agents/
-│       │   ├── __init__.py
-│       │   ├── base.py
-│       │   ├── ai_frontend_engineer.py
-│       │   ├── ai_backend_engineer.py
-│       │   ├── ai_machine_learning_engineer.py
-│       │   ├── ai_engineer.py
-│       │   ├── ai_fullstack_engineer.py
-│       │   ├── ai_data_engineer.py
-│       │   ├── ai_data_scientist.py
-│       │   ├── ai_database_admin.py
-│       │   ├── ai_stream_engineer.py
-│       │   └── registry.py
-│       ├── utils/
-│       │   ├── __init__.py
-│       │   ├── env.py
-│       │   ├── memory.py
-│       │   └── message_bus.py
-│       └── resources/
-│           ├── application.json
-│           └── log4j.properties
-├── docs/
-│   ├── adrs/
-│   │   ├── README.md
-│   │   ├── 0001-supervisor-specialist-orchestration.md
-│   │   ├── 0002-mongodb-shared-memory.md
-│   │   ├── 0003-rabbitmq-message-bus.md
-│   │   ├── 0004-databricks-mcp-gateway-constraints.md
-│   │   ├── 0005-pydantic-ai-tool-layer.md
-│   │   └── template.md
-│   ├── architecture.md
-│   └── runbook.md
-├── container/
-│   ├── Dockerfile
-│   ├── docker-compose.yml
-│   └── README.md
-├── scripts/
-│   └── databricks_deploy.sh
-├── .github/workflows/
-│   └── databricks-cicd.yml
-```
+- [ADR-0005: Pydantic AI Tool Layer](docs/adrs/0005-pydantic-ai-tool-layer.md)
+- [ADR-0006: Layered Prompt Engineering Design](docs/adrs/0006-prompt-engineering-layered-governed-design.md)
