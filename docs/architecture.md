@@ -68,60 +68,60 @@ Packaging, deployment, and operations:
 
 ```mermaid
 flowchart TB
-  cli[CLI / main.py]
-  rt[RuntimeFactory]
-  sup[SupervisorAgent]
-  lgs[LangGraphSupervisorAgent]
+  user[User Task / CLI]
 
-  subgraph control[Control Plane]
-    routing[Task routing and decomposition]
-    review[Peer review and revision loop]
-    parallel[Parallel specialist dispatch]
+  subgraph l1[Layer 1 - Entry and Runtime Assembly]
+    main[main.py CLI]
+    rf[runtime_factory.py]
+    cfg[settings.py + env]
   end
 
-  subgraph specialists[Specialist Plane]
-    fe[frontend]
-    be[backend]
-    ai[ai_engineer]
-    ml[ml_engineer]
-    fs[fullstack]
-    de[data_engineer]
-    ds[data_scientist]
-    dba[database_admin]
-    se[stream_engineer]
+  subgraph l2[Layer 2 - Orchestration and Control]
+    sup[SupervisorAgent]
+    lgs[LangGraphSupervisorAgent]
+    route[Task decomposition and routing]
+    loop[Peer review and revision loop]
   end
 
-  subgraph collaboration[Collaboration Plane]
-    mem[SharedMemory / MongoDB or in-memory fallback]
-    bus[MessageBus / RabbitMQ or in-memory fallback]
+  subgraph l3[Layer 3 - Specialist Execution]
+    specs[frontend backend ai_engineer ml_engineer fullstack data_engineer data_scientist database_admin stream_engineer]
+    tools[Shared specialist tools and contracts]
   end
 
-  subgraph integration[Integration Plane]
+  subgraph l4[Layer 4 - Collaboration Services]
+    mem[SharedMemory MongoDB or in-memory fallback]
+    bus[MessageBus RabbitMQ or in-memory fallback]
+  end
+
+  subgraph l5[Layer 5 - Data and Integration]
     mcp[MCPDataSourceGateway]
-    dsu[Databricks Unity Catalog]
-    dsf[Databricks Feature Store]
-    dsl[Databricks Lakebase]
+    uc[Databricks Unity Catalog]
+    fs[Databricks Feature Store]
+    lb[Databricks Lakebase]
   end
 
-  subgraph observability[Observability Pipeline]
+  subgraph l6[Layer 6 - Observability Sources]
     cw[AWS CloudWatch]
-    grf[Grafana]
+    gr[Grafana]
+    ext[Kafka Flink Aurora]
   end
 
-  cli --> rt
-  rt --> sup
-  rt --> lgs
-  sup --> control
-  lgs --> control
-  sup --> specialists
-  lgs --> specialists
-  specialists <--> collaboration
-  specialists --> mcp
-  mcp --> dsu
-  mcp --> dsf
-  mcp --> dsl
-  cw -->|metrics: Kafka / Flink / Aurora| grf
-  grf -->|real-time ingest| dsl
+  user --> main --> rf
+  cfg --> rf
+  rf --> sup
+  rf --> lgs
+  sup --> route --> specs
+  lgs --> route
+  sup --> loop
+  lgs --> loop
+  specs --> tools
+  specs <--> mem
+  specs <--> bus
+  specs --> mcp
+  mcp --> uc
+  mcp --> fs
+  mcp --> lb
+  ext --> cw --> gr --> lb
 ```
 
 ## Project Frameworks Diagram
@@ -194,6 +194,24 @@ flowchart LR
 ```
 
 ## Runtime Interaction
+
+## Procedure Flow Diagram
+
+```mermaid
+flowchart TD
+  a[1. User submits task] --> b[2. RuntimeFactory loads env and config]
+  b --> c[3. Build dependencies: LLM client, memory, message bus]
+  c --> d[4. Select supervisor implementation]
+  d --> e[5. Decompose task into specialist subtasks]
+  e --> f[6. Dispatch specialists serial or parallel]
+  f --> g[7. Specialists use tools: files, shell, memory, bus, MCP retrieve]
+  g --> h[8. Collect outputs and run peer review]
+  h --> i{9. Revision required?}
+  i -->|Yes| j[10. Request revision and rerun affected specialist]
+  j --> h
+  i -->|No| k[11. Supervisor synthesizes final response]
+  k --> l[12. Return result to user]
+```
 
 ```text
 User Task
