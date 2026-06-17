@@ -98,6 +98,8 @@ Positioning summary:
 - The strongest differentiators are typed collaboration (memory + bus), explicit runtime wiring, and Databricks MCP integration.
 - Domain-specific adaptation is achieved by extending prompts, playbooks, KPIs, and policies without replacing core orchestration.
 
+### Runtime Control and Data Planes Diagram
+
 ```mermaid
 flowchart TB
   user[User Task / CLI]
@@ -156,7 +158,7 @@ flowchart TB
   ext --> cw --> gr --> lb
 ```
 
-## Project Frameworks Diagram
+## Framework and Integration Topology
 
 ```mermaid
 flowchart LR
@@ -227,7 +229,7 @@ flowchart LR
 
 ## Runtime Interaction
 
-### Procedure Flow Diagram
+### End-to-End Task Execution Flow
 
 ```mermaid
 flowchart TD
@@ -245,7 +247,7 @@ flowchart TD
   k --> l[12. Return result to user]
 ```
 
-### Interaction Summary
+### Runtime Call Graph Summary
 
 ```text
 User Task
@@ -267,6 +269,8 @@ Specialist routing now includes database operational delegation via `database_ad
 Together with data and ML specialists, these roles form a domain operations team that can execute end-to-end domain management workflows.
 
 ## Agent Design Patterns
+
+### Pattern Interaction Diagram
 
 ```mermaid
 flowchart LR
@@ -292,13 +296,24 @@ flowchart LR
   spec --> adapter
 ```
 
-- Supervisor pattern: centralized planning, delegation, synthesis.
-- Specialist role pattern: domain-specialized behavior over shared capabilities.
-- Blackboard pattern: decoupled coordination through namespaced memory keys.
-- Event bus pattern: typed, durable inter-agent communication via RabbitMQ.
-- Reviewer-revision loop: quality gating via explicit critique and rework.
-- Tool-dispatch loop: bounded iterative agent execution.
-- Adapter/Gateway pattern: unified external data access through MCP gateway.
+This runtime combines complementary patterns so domain work remains decomposable, auditable, and resilient under operational load.
+
+| Pattern | Intent | Runtime Anchor | Domain Management Value | Operational Safeguard |
+| --- | --- | --- | --- | --- |
+| Supervisor pattern | Centralize decomposition, routing, and synthesis. | `SupervisorAgent`, `LangGraphSupervisorAgent` | Turns domain goals into specialist-aligned work plans. | Prevents uncoordinated specialist drift. |
+| Specialist role pattern | Keep execution role-focused over shared contracts. | `BaseSpecialistAgent` + concrete specialists | Preserves clear ownership for data, ML, DB, stream, and delivery concerns. | Reduces scope creep and ambiguous handoffs. |
+| Blackboard pattern | Share durable collaboration artifacts via namespaced keys. | `SharedMemory` | Maintains cross-specialist domain context over multi-step workflows. | Avoids context loss across iterative revisions. |
+| Event bus pattern | Exchange typed coordination messages asynchronously. | `MessageBus` | Supports explicit domain handoffs, questions, and decisions. | Improves traceability for escalation and review. |
+| Reviewer-revision loop | Enforce critique and rework before final synthesis. | `request_peer_review` -> `request_revision` | Raises quality of domain recommendations and runbooks. | Catches weak assumptions before output publication. |
+| Tool-dispatch loop | Bound specialist actions to typed tools and contracts. | Shared `@agent.tool` surface | Keeps domain work reproducible and automatable. | Limits unsafe free-form execution paths. |
+| Adapter/Gateway pattern | Normalize external retrieval through one abstraction. | `MCPDataSourceGateway` | Grounds decisions in governed Databricks domain context. | Isolates upstream source/API changes from specialists. |
+
+### Pattern Interaction Notes
+
+- Control flows from supervisor to specialists, while collaboration state flows through memory and bus.
+- Quality gates are explicit: outputs can be critiqued and revised before synthesis.
+- Retrieval is abstracted behind MCP gateway calls, so specialists stay source-agnostic and policy-aligned.
+- Fallback behavior (in-memory memory/bus backends) preserves local operability when infra dependencies are unavailable.
 
 ## Databricks MCP Integration
 
@@ -317,7 +332,7 @@ Important behavior:
 - Any specialist can call `mcp_retrieve`; the shared tool policy restricts `ml_engineer` to Feature Store retrieval only.
 - `LAKEBASE_METRICS_TABLE` overrides the Lakebase table name for operational metrics, falling back to `LAKEBASE_TABLE`.
 
-## Observability and Metrics Pipeline
+## Observability Ingestion and Retrieval Pipeline
 
 ```mermaid
 flowchart LR
