@@ -22,6 +22,30 @@ The runtime enforces a domain-first operating model:
 - Typed handoff artifacts: specialists publish decisions, evidence, and outputs through shared memory and message bus contracts.
 - Governance and feedback: peer review, revision loops, and policy constraints keep domain outcomes reliable and auditable.
 
+## Production-Grade Design Considerations
+
+For production implementations, the architecture should explicitly include cost, privacy, and safety controls as first-class design inputs.
+
+- Token burn and cost control:
+  - Enforce per-task and per-specialist token budgets.
+  - Use staged context loading, summarization, and retrieval top-k caps to reduce prompt size.
+  - Add model routing policies (for example, smaller models for low-risk steps, premium models for final synthesis).
+  - Track token and cost telemetry by workflow, specialist, and domain objective.
+- Data privacy and protection:
+  - Apply data classification before prompts are built (public/internal/confidential/restricted).
+  - Redact or mask sensitive values (PII/PHI/secrets) before memory, bus, and LLM calls.
+  - Enforce least-privilege access to retrieval sources and tool execution.
+  - Define retention and deletion policies for shared memory, message logs, and generated artifacts.
+- Guardrails and policy enforcement:
+  - Add policy checks before tool calls and before final output release.
+  - Require approval gates for high-impact actions (schema changes, production operations, security-sensitive updates).
+  - Add output validation for correctness, compliance language, and prohibited actions.
+  - Keep full audit trails for prompts, tool invocations, decisions, and revisions.
+
+Recommended implementation note:
+
+- Keep these controls centralized in the control plane (orchestration and runtime factory configuration) so every specialist path inherits the same baseline protections.
+
 ## Domain-Specific Extension Blueprint
 
 The POC architecture is designed to be industry-agnostic at the orchestration layer. For domain-specific implementations (for example retail or healthcare), extend the system by adding domain capabilities per plane rather than rewriting core runtime components.
