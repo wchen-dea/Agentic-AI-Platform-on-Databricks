@@ -39,7 +39,7 @@ Optional RabbitMQ credentials (used in docker-compose defaults):
 
 Optional MongoDB memory configuration:
 
-- MONGODB_DB (default: agentic_application)
+- MONGODB_DB (default: agentic_app)
 - MONGODB_MEMORY_COLLECTION (default: shared_memory)
 
 Optional runtime wiring configuration:
@@ -126,7 +126,7 @@ make build-wheel
 
 Expected artifact:
 
-- `dist/agentic_application-<version>-py3-none-any.whl`
+- `dist/agentic_app-<version>-py3-none-any.whl`
 
 ## CI/CD Workflow
 

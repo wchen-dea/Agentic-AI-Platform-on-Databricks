@@ -19,7 +19,7 @@ from pymongo.errors import PyMongoError
 
 
 DEFAULT_MONGODB_URI = "mongodb://localhost:27017"
-DEFAULT_MONGODB_DB = "agentic_application"
+DEFAULT_MONGODB_DB = "agentic_app"
 DEFAULT_MONGODB_COLLECTION = "shared_memory"
 
 LOGGER = logging.getLogger(__name__)

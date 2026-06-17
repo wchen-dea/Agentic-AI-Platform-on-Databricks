@@ -44,7 +44,7 @@ services:
     environment:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       MONGODB_URI: mongodb://mongodb:27017
-      MONGODB_DB: agentic_application
+      MONGODB_DB: agentic_app
       MONGODB_MEMORY_COLLECTION: shared_memory
       RABBITMQ_URL: amqp://${RABBITMQ_USER:-guest}:${RABBITMQ_PASS:-guest}@rabbitmq:5672/
       APP_TASK: ${APP_TASK:-build a user authentication system}
