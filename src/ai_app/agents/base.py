@@ -59,8 +59,8 @@ class AgentResult(BaseModel):
 
 class BaseSpecialistAgent:
     name: str = "specialist"
-    role: str = "software engineer"
-    system_prompt: str = "You are a helpful software engineer."
+    role: str = "domain specialist"
+    system_prompt: str = "You are a helpful domain specialist."
 
     def __init__(
         self,
@@ -92,9 +92,9 @@ class BaseSpecialistAgent:
             system_prompt=(
                 f"{self.system_prompt}\n\n"
                 "You have access to shared memory (memory_write/read/list) and a message bus "
-                "(send_message/read_messages) to collaborate with other agents. "
-                "For external knowledge, call mcp_retrieve against Databricks-backed sources. "
-                "Always store key decisions and artifacts to shared memory so teammates can build on your work. "
+                "(send_message/read_messages) to collaborate with other specialists. "
+                "For external domain context, call mcp_retrieve against Databricks-backed sources. "
+                "Always store key domain decisions and artifacts to shared memory so teammates can build on your work. "
                 "Read your inbox at the start and reply to any questions directed at you."
             ),
             model_settings=settings,

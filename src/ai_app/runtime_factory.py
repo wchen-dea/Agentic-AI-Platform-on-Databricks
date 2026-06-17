@@ -67,8 +67,11 @@ def config_from_env(
 def build_runtime(config: RuntimeConfig) -> RuntimeContext:
     """Construct and wire all runtime dependencies for the selected implementation."""
 
-    if not config.anthropic_api_key:
-        raise ValueError("ANTHROPIC_API_KEY not set. Copy .env.example to .env and add your key.")
+    if not config.anthropic_api_key or config.anthropic_api_key == "your_anthropic_api_key_here":
+        raise ValueError(
+            "ANTHROPIC_API_KEY is missing or still set to the placeholder value. "
+            "Update .env with your real key, or export it before running Docker Compose or the local CLI for domain specialist execution."
+        )
 
     project = Path(config.project_root)
     project.mkdir(parents=True, exist_ok=True)

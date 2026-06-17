@@ -4,6 +4,8 @@
 
 This runbook covers day-to-day operation of Agentic Application, including local execution, validation, packaging, and Databricks CI/CD rollout.
 
+Operational framing: this platform is run as a modern data domain management system where specialist agents own role-specific responsibilities and coordinate via supervisor-controlled handoffs.
+
 It is architecture-aligned to the implemented runtime path:
 
 - `src/ai_app/runtime_factory.py`: assembly of Anthropic client, memory backend, message bus, and supervisor implementation.
@@ -70,6 +72,12 @@ Optional runtime variables for MCP data retrieval:
 
 Current specialist roster includes: `frontend`, `backend`, `ml_engineer`, `ai_engineer`, `fullstack`, `data_engineer`, `data_scientist`, `database_admin`, and `stream_engineer`.
 
+Domain operations intent:
+
+- `data_engineer`, `data_scientist`, and `ml_engineer` cover domain data product development and model outcomes.
+- `database_admin` and `stream_engineer` cover operational reliability for domain-serving data infrastructure.
+- `backend`, `frontend`, and `fullstack` cover delivery surfaces that expose domain intelligence to users and systems.
+
 Use `database_admin` for operational DBA workflows such as backup/restore validation, health-check automation, performance triage, and incident runbook generation.
 
 Use `stream_engineer` for Kafka and Flink operational workflows such as consumer-lag investigation, topic management, Flink job lifecycle (savepoint, restore, upgrade), backpressure triage, and streaming infrastructure health checks.
@@ -85,6 +93,10 @@ Agents retrieve operational context from Lakebase via `mcp_retrieve` with `sourc
 ```bash
 # run a task
 uv run multi-ai-agent --task "build a RAG chatbot"
+
+# domain-oriented examples
+uv run multi-ai-agent --task "design domain ownership metrics and data quality checks for order-to-cash"
+uv run multi-ai-agent --task "triage streaming lag and propose domain incident remediation steps"
 
 # include memory and message logs
 uv run multi-ai-agent --task "build a churn model" --show-memory --show-messages

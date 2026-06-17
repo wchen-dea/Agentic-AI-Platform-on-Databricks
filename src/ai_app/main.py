@@ -1,14 +1,14 @@
 """
-Multi-Specialist Claude Agent
-==============================
-A supervisor + specialist multi-agent system with:
-  - Shared memory layer   — agents read/write named artifacts across the session
-  - Message bus           — agents send typed messages to each other
-  - Peer review / feedback loop — supervisor asks Specialist B to critique A's work,
-                                   then asks A to revise
+Multi-Specialist Data Domain Agent Runtime
+==========================================
+A supervisor + specialist multi-agent system for modern data domain management with:
+    - Shared memory layer   — specialists read/write domain artifacts across the session
+    - Message bus           — specialists exchange typed coordination messages
+    - Peer review loop      — supervisor enforces critique-and-revision quality gates
 
 Specialists:
-  frontend, backend, ml_engineer, ai_engineer, fullstack, data_engineer, data_scientist
+    frontend, backend, ml_engineer, ai_engineer, fullstack, data_engineer, data_scientist,
+    database_admin, stream_engineer
 
 Usage:
     uv run multi-ai-agent --task "build a product recommendation system"
@@ -24,6 +24,7 @@ import os
 import sys
 from pathlib import Path
 
+import anthropic
 from dotenv import load_dotenv
 
 from .runtime_factory import build_runtime, config_from_env
@@ -37,7 +38,7 @@ LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s - %(message)s"
 
 BANNER = """
 ╔══════════════════════════════════════════════════════════════════╗
-║         MULTI-SPECIALIST CLAUDE AGENT                           ║
+║      MULTI-SPECIALIST DATA DOMAIN AGENT RUNTIME                ║
 ╚══════════════════════════════════════════════════════════════════╝
   Task    : {task}
   Project : {project}
@@ -60,7 +61,7 @@ def parse_args() -> argparse.Namespace:
     default_workers = env_int("SUPERVISOR_MAX_WORKERS", 4)
     default_impl = os.getenv("AI_APP_IMPLEMENTATION", "classic")
     p = argparse.ArgumentParser(
-        description="Supervisor + specialist Claude agents with memory and messaging.",
+        description="Supervisor + specialist agents for modern data domain management.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=__doc__,
     )
@@ -155,7 +156,15 @@ def main() -> None:
         supervisor.bus.clear()
         LOGGER.info("Cleared shared memory and message bus.")
 
-    result = supervisor.run(task=args.task)
+    try:
+        result = supervisor.run(task=args.task)
+    except anthropic.AuthenticationError:
+        LOGGER.error(
+            "ANTHROPIC_API_KEY was provided but rejected by Anthropic. "
+            "Update .env or your shell environment with a valid key so specialist domain workflows can run."
+        )
+        sys.exit(1)
+
     print_report(result, show_memory=args.show_memory, show_messages=args.show_messages)
 
 

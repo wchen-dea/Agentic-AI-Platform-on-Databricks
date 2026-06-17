@@ -40,6 +40,13 @@ run-reset:
 	$(UV) run $(APP) --task "$(TASK)" --project "$(PROJECT)" --workers "$(WORKERS)" --reset-memory $(ARGS)
 
 run-container:
+	@set -a; \
+	if [ -f .env ]; then . ./.env; fi; \
+	set +a; \
+	if [ -z "$$ANTHROPIC_API_KEY" ] || [ "$$ANTHROPIC_API_KEY" = "your_anthropic_api_key_here" ]; then \
+		echo "ANTHROPIC_API_KEY is missing or still using the placeholder value. Update .env or export the key before running make run-container."; \
+		exit 1; \
+	fi; \
 	docker compose -f container/docker-compose.yml up --build
 
 stop-container:

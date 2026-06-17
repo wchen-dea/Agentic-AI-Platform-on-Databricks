@@ -4,12 +4,23 @@ Related decisions are documented in [ADRs](adrs/README.md).
 
 ## System Overview
 
-The application uses a supervisor-specialist architecture with four planes:
+The application uses a supervisor-specialist architecture for modern data domain management with four planes:
 
 - Control Plane: task decomposition, routing, feedback loop.
 - Specialist Plane: domain-focused agents execute delegated tasks.
 - Collaboration Plane: shared memory and typed message bus.
 - Integration Plane: MCP gateway for Databricks-backed data sources.
+
+This architecture treats each workload as a domain management loop: objectives are decomposed into specialist tasks, domain artifacts are exchanged through typed collaboration primitives, and decisions are grounded with governed retrieval.
+
+## Data Domain Management Model
+
+The runtime enforces a domain-first operating model:
+
+- Domain objective definition: outcomes are scoped as domain goals and KPI movement targets.
+- Specialist delegation: the supervisor assigns domain work to role-specific specialists with explicit boundaries.
+- Typed handoff artifacts: specialists publish decisions, evidence, and outputs through shared memory and message bus contracts.
+- Governance and feedback: peer review, revision loops, and policy constraints keep domain outcomes reliable and auditable.
 
 ## Domain-Specific Extension Blueprint
 
@@ -83,7 +94,7 @@ The following comparison is a reference snapshot based on common market patterns
 
 Positioning summary:
 
-- This project emphasizes governed, enterprise-ready orchestration over single-agent automation.
+- This project emphasizes governed, enterprise-ready domain orchestration over single-agent automation.
 - The strongest differentiators are typed collaboration (memory + bus), explicit runtime wiring, and Databricks MCP integration.
 - Domain-specific adaptation is achieved by extending prompts, playbooks, KPIs, and policies without replacing core orchestration.
 
@@ -253,6 +264,7 @@ User Task
 ```
 
 Specialist routing now includes database operational delegation via `database_admin` for backup/restore drills, health checks, and incident-response runbooks, and streaming operational delegation via `stream_engineer` for Kafka cluster management and Flink job lifecycle operations.
+Together with data and ML specialists, these roles form a domain operations team that can execute end-to-end domain management workflows.
 
 ## Agent Design Patterns
 

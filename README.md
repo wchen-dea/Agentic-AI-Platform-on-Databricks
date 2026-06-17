@@ -1,18 +1,27 @@
 # Agentic Application
 
-Agentic Application is an enterprise AI agent system for building and operationalizing one or more collaborating agents that can execute complex tasks.
+Agentic Application is an enterprise AI system for modern data domain management using collaborating specialist agents.
 
 Instead of relying on a single model call, the platform combines multiple interacting components, including large language models (LLMs), classical machine learning (ML) models, enterprise data, and external tools, to achieve business goals reliably and efficiently.
 
 The system is designed with built-in evaluation and governance so outputs can be measured against defined objectives while maintaining security, compliance, and accountability across the full workflow.
 
-In this repository, that model is implemented as a supervisor-driven multi-agent engineering runtime with specialist agents, shared memory, typed messaging, and environment-driven dependency wiring via the runtime factory.
+In this repository, that model is implemented as a supervisor-driven specialist runtime where domain-focused agents coordinate through shared memory, typed messaging, and environment-driven dependency wiring in the runtime factory.
 
 This repository is a reference project (proof-of-concept style) that demonstrates architecture, orchestration patterns, and collaboration primitives in a practical end-to-end setup.
 
-It is intentionally designed to be extended into real-time operational analytics support, where enterprise teams can evolve this foundation into production-grade data and AI workflows.
+It is intentionally designed to be extended into real-time operational analytics support, where enterprise teams can evolve this foundation into production-grade domain data products and AI workflows.
 
-Modern data engineering in this context emphasizes event-driven, cloud-native, governed, and automated data platforms that deliver trusted, real-time data products using software engineering principles.
+Modern data engineering in this context emphasizes event-driven, cloud-native, governed, and automated platforms that deliver trusted, real-time domain data products using software engineering principles.
+
+## Data Domain Management Framing
+
+The operating model in this project centers on domain ownership and specialist delegation:
+
+- Domain goals are translated into specialist tasks by the supervisor control plane.
+- Specialists execute within clear role boundaries and exchange typed handoff artifacts.
+- Shared memory and message routing preserve cross-domain context for iterative decisioning.
+- MCP retrieval grounds decisions in current domain telemetry and governed enterprise data.
 
 ## Extending The POC To Industry Domains
 
@@ -39,19 +48,19 @@ Implementation suggestion:
 
 - Create a domain configuration module (for example, `settings_retail.py` or `settings_healthcare.py`) that selects data sources, KPIs, and policy constraints per deployment environment.
 
-## Agent System Lifecycle
+## Domain Management Lifecycle
 
-- Prepare data: organize and preprocess enterprise data so it is accessible and relevant for agent reasoning and interactions.
-- Build agents: compose generative AI models, classical ML models, and tools for role-specific tasks.
-- Deploy agents: run agents in production settings with secure, reliable interactions across users and systems.
-- Evaluate performance: continuously measure output quality and progress against target outcomes.
-- Govern operations: enforce security, compliance, and ethical standards with end-to-end operational visibility.
+- Prepare domain context: organize domain datasets, contracts, and operational telemetry for specialist reasoning.
+- Plan specialist work: decompose domain objectives into role-specific tasks and handoffs.
+- Execute and coordinate: run specialist workflows with shared memory, messaging, and MCP-grounded retrieval.
+- Evaluate domain outcomes: measure quality, latency, and KPI movement against target domain objectives.
+- Govern and improve: enforce security/compliance controls and continuously refine specialist playbooks.
 
 ## Why This Project
 
-- Multi-agent orchestration with explicit specialist roles.
+- Multi-agent orchestration with explicit specialist domain roles.
 - Pydantic AI tool layer: auto-generated schemas, typed deps via `RunContext`, and validated `AgentResult`.
-- Collaboration primitives for memory sharing and inter-agent messaging.
+- Collaboration primitives for domain memory sharing and inter-agent messaging.
 - Databricks-backed retrieval through an MCP gateway.
 - Real-time operational metrics from AWS CloudWatch and Grafana (Kafka, Flink, Aurora) are ingested into Databricks Lakebase, which serves as the agent knowledge base via `databricks_lakebase_mcp`.
 - Packaging and deployment support with `uv`, wheel builds, and Databricks CI/CD.
