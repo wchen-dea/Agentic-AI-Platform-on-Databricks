@@ -136,6 +136,7 @@ The following comparison is a reference snapshot based on common market patterns
 | Pipeline Development | Mage AI | Notebook-first pipeline prototyping and data quality checks | Aligns through rapid specialist iteration plus governed runtime assembly and deployment paths |
 | SQL Optimization | Dataherald | Natural language to SQL and query plan guidance | Aligns through backend/data specialist collaboration with MCP-grounded retrieval and review loops |
 | SQL Optimization | Operative AI | Query pattern analysis and performance recommendation explanation | Aligns through retrieval from Lakebase operational metrics and specialist-based optimization workflows |
+| Agent Tooling Framework | Pydantic AI | Typed tool schemas, dependency injection, and validated agent outputs | Directly aligned: this project uses Pydantic AI as the specialist tool layer with typed deps and structured results |
 | Multi-Agent Collaboration | CrewAI | Role-based multi-agent orchestration | Directly aligned with supervisor-specialist orchestration and typed collaboration primitives |
 | Multi-Agent Collaboration | LangChain Agents | Agent chains and workflow orchestration | Supported via optional LangGraph supervisor path and tool-dispatch execution model |
 | Enterprise Solutions | Tredence DataOps Agents | Domain-specific AI frameworks across industries | Aligns with this platform's domain extension blueprint for retail/healthcare and governed integration layers |
