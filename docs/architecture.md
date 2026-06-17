@@ -216,7 +216,7 @@ flowchart LR
 
 ## Runtime Interaction
 
-## Procedure Flow Diagram
+### Procedure Flow Diagram
 
 ```mermaid
 flowchart TD
@@ -234,13 +234,15 @@ flowchart TD
   k --> l[12. Return result to user]
 ```
 
+### Interaction Summary
+
 ```text
 User Task
   -> RuntimeFactory (env + CLI resolved config)
      -> Anthropic client + SharedMemory + MessageBus
      -> SupervisorAgent or LangGraphSupervisorAgent
   -> Selected supervisor
-      -> call_ / call_specialists_parallel
+    -> call_ / call_specialists_parallel
      -> request_peer_review
      -> request_revision
   -> Specialists use shared tools:

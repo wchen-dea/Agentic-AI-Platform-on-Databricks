@@ -47,6 +47,8 @@ jobs:
         run: uv build --wheel
 
       - name: Upload wheel artifact
+        # Destination 1 (CI-internal): stores the wheel in GitHub Actions artifact storage
+        # as artifact "app-wheel" so downstream jobs can download it.
         uses: actions/upload-artifact@v4
         with:
           name: app-wheel
@@ -84,6 +86,9 @@ jobs:
         run: |
           chmod +x scripts/databricks_deploy.sh
           WHEEL_PATH="$(ls -1 dist/*.whl | head -n 1)"
+          # Destination 2 (runtime): databricks_deploy.sh uploads this wheel to
+          # dbfs:/Volumes/${DATABRICKS_VOLUME_PATH}/releases/${GITHUB_SHA}/<wheel_name>
+          # via databricks fs cp before deploying the Databricks app bundle.
           scripts/databricks_deploy.sh "$APP_ENV" "$WHEEL_PATH"
 
   deploy_production:
@@ -117,4 +122,7 @@ jobs:
         run: |
           chmod +x scripts/databricks_deploy.sh
           WHEEL_PATH="$(ls -1 dist/*.whl | head -n 1)"
+          # Destination 2 (runtime): databricks_deploy.sh uploads this wheel to
+          # dbfs:/Volumes/${DATABRICKS_VOLUME_PATH}/releases/${GITHUB_SHA}/<wheel_name>
+          # via databricks fs cp before deploying the Databricks app bundle.
           scripts/databricks_deploy.sh "$APP_ENV" "$WHEEL_PATH"
