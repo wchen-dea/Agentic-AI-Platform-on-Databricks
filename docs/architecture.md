@@ -32,6 +32,40 @@ Healthcare implementation notes:
 - Real-time signals: throughput bottlenecks, quality-measure drift, readmission risk indicators, and care-delay alerts.
 - Governance: PHI-safe retrieval patterns, role-based access controls, audit trails, and policy-bound tool execution.
 
+## Tech Stack
+
+Core runtime and orchestration:
+
+- Python 3.12+ for application runtime.
+- Pydantic AI for agent/tool orchestration with typed dependencies.
+- Anthropic SDK for LLM inference.
+- LangGraph (optional implementation) for state-machine style orchestration.
+
+Application and tooling:
+
+- FastAPI-style backend scaffolding patterns in specialist outputs.
+- Pydantic v2 models for typed contracts and validation.
+- Concurrent execution via `concurrent.futures` and threading.
+
+Collaboration and state:
+
+- MongoDB for shared memory persistence with in-memory fallback.
+- RabbitMQ for typed inter-agent messaging with in-memory fallback.
+
+Data and retrieval:
+
+- Databricks MCP gateway integration (`MCPDataSourceGateway`).
+- Databricks Unity Catalog and Feature Store for enterprise retrieval sources.
+- Databricks Lakebase as the real-time operational knowledge base.
+- AWS CloudWatch + Grafana as upstream metrics collection and ingestion pipeline.
+
+Packaging, deployment, and operations:
+
+- `uv` for dependency and environment management.
+- `setuptools` wheel packaging.
+- Docker and Docker Compose for local containerized runtime.
+- GitHub Actions + Databricks deploy scripts for CI/CD workflows.
+
 ```mermaid
 flowchart TB
   cli[CLI / main.py]

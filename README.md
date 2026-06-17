@@ -117,6 +117,8 @@ For runtime operations and deployment details, see the runbook.
 
 ## Documentation
 
+Runtime Stack quick link: see [Architecture -> Tech Stack](docs/architecture.md#tech-stack) for the end-to-end runtime, data, and delivery technologies used by this project.
+
 - [Architecture](docs/architecture.md)
 - [Runbook](docs/runbook.md)
 - [ADRs](docs/adrs/README.md)
